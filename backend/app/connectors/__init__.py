@@ -7,6 +7,7 @@ logic (ARCHITECTURE.md, Connectors).
 
 from app.connectors.base import BaseConnector, ConnectorHealth, ConnectorMetadata, FetchResult
 from app.connectors.nowflation import NowflationConnector
+from app.connectors.yahoo import YahooConnector
 
 __all__ = [
     "BaseConnector",
@@ -14,4 +15,5 @@ __all__ = [
     "ConnectorMetadata",
     "FetchResult",
     "NowflationConnector",
+    "YahooConnector",
 ]

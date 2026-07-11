@@ -15,6 +15,7 @@ import io
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
+from app.normalization import NormalizationError
 from app.schemas.macro import MacroObservationIn, SeriesDefinition
 
 SERIES_HEADLINE_INDEX = "nowflation.headline.index"
@@ -52,10 +53,6 @@ _COLUMN_TO_SERIES = {
 }
 
 _EXPECTED_COLUMNS = frozenset({"date", *_COLUMN_TO_SERIES})
-
-
-class NormalizationError(Exception):
-    """Raised when a raw payload does not match the expected format."""
 
 
 def normalize_headline_csv(csv_text: str) -> list[MacroObservationIn]:

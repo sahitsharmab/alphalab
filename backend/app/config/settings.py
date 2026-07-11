@@ -49,7 +49,14 @@ class Settings(BaseSettings):
 
     # External providers
     nowflation_base_url: str = "https://nowflation.com"
+    yahoo_base_url: str = "https://query1.finance.yahoo.com"
     http_timeout_seconds: float = 30.0
+
+    # Workspace
+    benchmark_symbol: str = "SPY"
+    # Re-fetch market history when the newest stored bar is older than this
+    # (covers weekends + holidays without refetching every request).
+    market_staleness_days: int = 4
 
     @property
     def database_url(self) -> str:

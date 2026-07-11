@@ -5,5 +5,14 @@ autogenerate.
 """
 
 from app.models.macro import MacroObservation, MacroSeries, RawPayload
+from app.models.market import Instrument, MarketBar
+from app.models.research import WorkspaceSnapshot
 
-__all__ = ["MacroObservation", "MacroSeries", "RawPayload"]
+__all__ = [
+    "Instrument",
+    "MacroObservation",
+    "MacroSeries",
+    "MarketBar",
+    "RawPayload",
+    "WorkspaceSnapshot",
+]

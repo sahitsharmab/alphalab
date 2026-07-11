@@ -12,6 +12,7 @@ from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.connectors.nowflation import NowflationConnector
+from app.connectors.yahoo import YahooConnector
 
 
 async def get_session(request: Request) -> AsyncIterator[AsyncSession]:
@@ -32,4 +33,12 @@ def get_nowflation_connector(request: Request) -> NowflationConnector:
     return NowflationConnector(
         client=get_http_client(request),
         base_url=settings.nowflation_base_url,
+    )
+
+
+def get_yahoo_connector(request: Request) -> YahooConnector:
+    settings = request.app.state.settings
+    return YahooConnector(
+        client=get_http_client(request),
+        base_url=settings.yahoo_base_url,
     )

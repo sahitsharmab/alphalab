@@ -94,8 +94,9 @@ The long-term vision (Financial Intelligence Platform) is unchanged; v0.1 narrow
 AlphaLab v0.1 is an **Investment Decision Support System** for a discretionary investor:
 
 * The user decides **which stock to analyze**. Idea discovery is not an MVP goal.
-* AlphaLab answers: enter a ticker → receive a complete, evidence-backed **investment briefing** (technicals, macro context, news, catalysts, positioning, bull/bear cases, risks, portfolio impact, confidence, and the questions worth asking before investing).
+* AlphaLab answers: enter a ticker → open an **Investment Workspace** — a complete, evidence-backed view (technicals, macro context, news, catalysts, positioning, bull/bear cases, risks, portfolio impact, confidence, and the questions worth asking before investing).
 * Every conclusion explains *why*, with evidence preferred over opinions.
+* A briefing is something you read; a **workspace is somewhere you think**. The generated content is the *starting point* of an interactive research session: every major conclusion is traceable to its evidence and expandable for further investigation. AlphaLab is the place where investing work happens, not a report generator.
 
 The guiding question for every near-term feature:
 

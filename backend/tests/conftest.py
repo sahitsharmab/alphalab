@@ -115,7 +115,10 @@ async def integration_session(integration_db: Settings) -> AsyncIterator[AsyncSe
     engine = create_engine(integration_db.database_url)
     async with engine.connect() as connection:
         await connection.execute(
-            text("TRUNCATE macro_observations, raw_payloads, macro_series CASCADE")
+            text(
+                "TRUNCATE macro_observations, raw_payloads, macro_series, "
+                "market_bars, instruments, workspace_snapshots CASCADE"
+            )
         )
         await connection.commit()
     session_factory = create_session_factory(engine)

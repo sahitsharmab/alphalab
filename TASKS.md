@@ -33,18 +33,24 @@ The near-term filter for every task: *"Will this help me make a better investmen
 
 The original phases below remain the long-term map; the MVP re-sequences their contents into briefing-driven sprints. Architecture is unchanged — each sprint is a vertical slice through the existing layers.
 
-## Sprint A — Deterministic briefing core (NEXT)
+## Sprint A — Deterministic workspace core ✅ Complete (2026-07-12)
 
-Deliverable: `/briefing/{ticker}` page with Technical Overview, Macro Environment, and Historical Context — all deterministic, no LLM.
+Deliverable shipped: `/workspace/{ticker}` page (renamed per ADR-010) with Technical Overview, Historical Context, and Macro Environment — all deterministic, no LLM; every statement expandable to its evidence.
 
-* [ ] A1. Yahoo Finance connector (daily OHLCV + basic quote/profile), recorded-fixture tests
-* [ ] A2. Market normalization: OHLCV schema (bitemporal, corporate-action aware at minimum via adjusted close)
-* [ ] A3. Market storage: hypertable + repositories (as-of reads, same rules as macro)
-* [ ] A4. Feature functions (pure, versioned — ADR-008): returns, rolling volatility, EMA, RSI, ATR, drawdown, 52-week range, relative volume, beta vs SPY
-* [ ] A5. Technical engine: deterministic trend/momentum/volatility summary with the numbers that justify each statement
-* [ ] A6. Inflation engine (re-scoped from Phase 1): inflation level + 3m/12m trend classification feeding the Macro Environment section
-* [ ] A7. Briefing assembly API: `GET /api/v1/briefing/{ticker}` returning structured sections + evidence; briefing persisted as a research artifact
-* [ ] A8. Frontend ticker page: search box → briefing (price chart, technical summary, macro chip, historical stats)
+* [x] A1. Yahoo Finance connector (v8 chart API: daily OHLCV + adjusted close + instrument metadata)
+* [x] A2. Market normalization: bitemporal OHLCV schema, exchange-timezone bar dating, adjusted close
+* [x] A3. Market storage: instruments + market_bars hypertable + repositories (as-of reads, insert-on-change writes)
+* [x] A4. Feature functions (pure, versioned — ADR-008): returns, realized vol, EMA, RSI, ATR, drawdown, 52-week range, relative volume, beta vs SPY
+* [x] A5. Technical engine: statements + evidence (trend, momentum, volatility, volume) with degradation on short history
+* [x] A6. Inflation engine: regime (low/moderate/high) + 3m trend classification feeding Macro Environment
+* [x] A7. Workspace API: `GET /api/v1/workspace/{symbol}` (auto-ingests stale/missing history incl. benchmark; `?refresh=true`); every view persisted as a `workspace_snapshots` research artifact
+* [x] A8. Frontend workspace page: ticker search → price chart + sections with expandable evidence tables
+
+Follow-ups discovered:
+
+* [ ] Workspace: earnings-date awareness (placeholder until Sprint C)
+* [ ] Frontend component tests (scale/tick math, evidence rendering)
+* [ ] Extract shared bitemporal repository helper if a third bitemporal table appears
 
 ## Sprint B — AI synthesis layer
 

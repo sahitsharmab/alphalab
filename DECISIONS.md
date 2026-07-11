@@ -501,6 +501,40 @@ Idea discovery, screeners, and alpha research return to the roadmap after the de
 
 ---
 
+## ADR-010
+
+### Title
+
+Workspace, Not Report: Evidence Is a First-Class API Object
+
+### Date
+
+2026-07-12
+
+### Status
+
+Accepted
+
+### Context
+
+The v0.1 output was framed as an "investment briefing" — something you read. The owner's refinement: the page is an **Investment Workspace** — somewhere you think. Generated content is the starting point of an interactive research session; every conclusion must be traceable and explorable.
+
+### Decision
+
+1. The ticker page is the **Investment Workspace** (`/workspace/{symbol}`); naming follows throughout (API, UI, persistence).
+2. The API contract makes evidence first-class: sections contain **statements**, and every statement carries machine-readable references to **evidence items** (metric, value, as-of, source). The UI renders statements expandable to their evidence.
+3. Workspace snapshots are persisted as research artifacts, seeding the future thesis-journal/memory capability.
+
+### Reasoning
+
+Structuring output as statements-with-evidence costs almost nothing at build time but makes explorability the default contract — retrofitting traceability onto prose sections later would require rewriting every engine. This is the same lesson as bitemporality (ADR-004): encode the invariant in the data shape from day one.
+
+### Consequences
+
+Engines return structured statements + evidence, never prose blobs. Future interactive capabilities (drill-downs, notes, follow-up questions) attach to statements and evidence items without breaking the contract.
+
+---
+
 # Session Journal
 
 ---
@@ -675,6 +709,48 @@ Macro dashboard slice: visualize the Nowflation headline gauge in the frontend.
 ### Next Recommended Task
 
 Inflation engine (first Intelligence Engine): trend/regime classification over the gauge, exposed via API and a dashboard chip; then FRED connector with ALFRED vintages.
+
+---
+
+## Session 005
+
+### Date
+
+2026-07-12
+
+### Goal
+
+Roadmap refinement (ADR-009/010) and Sprint A: the deterministic Investment Workspace core.
+
+### Completed
+
+* ADR-009 (v0.1 = Investment Decision Support System) and ADR-010 (workspace framing; evidence as a first-class API object). PROJECT.md and TASKS.md updated accordingly.
+* Yahoo connector (v8 chart API — verified: no key, browser UA required), normalization with exchange-timezone bar dating and adjusted closes, bitemporal `market_bars` hypertable + `instruments` catalog (migration 0003).
+* Feature functions (pure, versioned): window returns, realized volatility, EMA, RSI (Wilder), ATR, max drawdown, 52-week range position, relative volume, OLS beta.
+* Technical Engine + Inflation Engine emitting statements with first-class evidence (shared `_SectionBuilder` enforces id integrity; the `WorkspaceSection` validator makes untraceable claims unrepresentable).
+* `WorkspaceService`: auto-ingests missing/stale history (symbol + SPY benchmark), assembles sections, persists every view to `workspace_snapshots` (research is permanent).
+* API `GET /api/v1/workspace/{symbol}` with symbol validation, 404 for unknown tickers, `?refresh=true`.
+* Frontend: `/workspace/[symbol]` page (price chart, sections with expandable evidence tables, refresh), ticker search on the dashboard.
+* 45 backend tests passing (features known-values, engines, normalization, 4 workspace integration tests incl. ADR-010 traceability and snapshot persistence). Verified live: real MU workspace with 10y of bars; screenshots reviewed.
+
+### Challenges
+
+* Windows has no system IANA tz database — added `tzdata` dependency for `zoneinfo`.
+* First beta tests used constant-growth series: zero return variance makes beta numerically undefined. Rewrote with varying-return series — a good reminder that statistical features need statistically meaningful test data.
+* A PowerShell text replacement mangled UTF-8 (mojibake); recovered via cp1252 round-trip. Lesson: use Python for text surgery on UTF-8 files.
+
+### Technical Debt
+
+* Health endpoint doesn't yet report connector health (Yahoo/Nowflation probes exist but aren't wired in).
+* `NowflationConnector.health()` and workspace auto-ingest fetch full history; fine at current scale.
+
+### Next Recommended Task
+
+Sprint B — LLM Gateway (ADR-006) + workspace synthesis: Executive Summary, Bull/Bear cases, Risks, Questions, reasoning only over Sprint A's evidence payload. Requires choosing the default LLM provider (open question).
+
+### Notes
+
+Sprint A guiding-question check: every item shipped serves "make a better decision on a stock I already chose."
 
 ---
 

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import LineChart, { ChartPoint } from "@/components/LineChart";
 import StatTile from "@/components/StatTile";
+import TickerSearch from "@/components/TickerSearch";
 import {
   getHealth,
   getObservations,
@@ -215,6 +216,7 @@ export default function DashboardPage() {
             Macro intelligence — Nowflation daily inflation gauge
           </p>
         </div>
+        <TickerSearch autoFocus />
         {health && (
           <span style={{ fontSize: 12, color: theme.inkMuted }}>
             <span

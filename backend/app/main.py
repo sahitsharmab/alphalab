@@ -30,7 +30,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # use), so both are safe outside the lifespan; the lifespan owns cleanup.
     engine = create_engine(settings.database_url)
     session_factory = create_session_factory(engine)
-    http_client = httpx.AsyncClient(timeout=settings.http_timeout_seconds)
+    http_client = httpx.AsyncClient(
+        timeout=settings.http_timeout_seconds,
+        # Some providers (Yahoo) reject default library user agents.
+        headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AlphaLab/0.1"},
+    )
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:

@@ -58,6 +58,50 @@ export function ingestNowflation(): Promise<IngestionReport> {
   });
 }
 
+// --- Investment Workspace (ADR-010) ---
+
+export interface EvidenceItem {
+  id: string;
+  label: string;
+  value: number | null;
+  display: string;
+  as_of: string;
+  source: string;
+}
+
+export interface WorkspaceStatement {
+  text: string;
+  evidence_ids: string[];
+}
+
+export interface WorkspaceSection {
+  id: string;
+  title: string;
+  statements: WorkspaceStatement[];
+  evidence: EvidenceItem[];
+}
+
+export interface WorkspaceView {
+  symbol: string;
+  name: string;
+  currency: string;
+  exchange: string;
+  generated_at: string;
+  quote: { price: number; price_date: string; change_1d: number | null };
+  price_history: { date: string; close: number }[];
+  sections: WorkspaceSection[];
+}
+
+export function getWorkspace(
+  symbol: string,
+  refresh = false,
+): Promise<WorkspaceView> {
+  const query = refresh ? "?refresh=true" : "";
+  return request<WorkspaceView>(
+    `/api/v1/workspace/${encodeURIComponent(symbol)}${query}`,
+  );
+}
+
 export interface Health {
   status: "ok" | "degraded";
   environment: string;
