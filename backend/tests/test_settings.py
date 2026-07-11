@@ -1,5 +1,7 @@
 """Tests for typed settings."""
 
+import os
+
 import pytest
 
 from app.config.settings import Environment, Settings
@@ -9,7 +11,12 @@ def _clean_settings(**overrides: object) -> Settings:
     return Settings(_env_file=None, **overrides)  # type: ignore[call-arg]
 
 
-def test_defaults_are_development() -> None:
+def test_defaults_are_development(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Strip ambient ALPHALAB_* variables (CI sets DB host/port for the
+    # integration suite) so this really tests the built-in defaults.
+    for key in list(os.environ):
+        if key.startswith("ALPHALAB_"):
+            monkeypatch.delenv(key)
     settings = _clean_settings()
     assert settings.env is Environment.DEVELOPMENT
     # Host-side default is 5433: compose publishes the DB there to avoid
