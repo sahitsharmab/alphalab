@@ -22,6 +22,22 @@ Automation second.
 
 Execution last.
 
+## Teach How to Think
+
+AlphaLab should teach the user **how to think**, not **what to think**.
+
+The platform prioritizes:
+
+* evidence
+* reasoning
+* historical context
+* trade-offs
+* uncertainty
+
+over binary buy/sell recommendations.
+
+The final investment decision always belongs to the user.
+
 Every feature should answer one question:
 
 > "Does this improve our ability to discover, validate, or monitor alpha?"
@@ -68,6 +84,26 @@ The platform should eventually be capable of:
 * Explaining every recommendation
 * Supporting paper trading
 * Eventually supporting automated execution
+
+---
+
+# Current MVP — AlphaLab v0.1: Investment Decision Support
+
+The long-term vision (Financial Intelligence Platform) is unchanged; v0.1 narrows the *implementation order*, not the architecture.
+
+AlphaLab v0.1 is an **Investment Decision Support System** for a discretionary investor:
+
+* The user decides **which stock to analyze**. Idea discovery is not an MVP goal.
+* AlphaLab answers: enter a ticker → receive a complete, evidence-backed **investment briefing** (technicals, macro context, news, catalysts, positioning, bull/bear cases, risks, portfolio impact, confidence, and the questions worth asking before investing).
+* Every conclusion explains *why*, with evidence preferred over opinions.
+
+The guiding question for every near-term feature:
+
+> "Will this help me make a better investment decision on a stock I have already chosen to analyze?"
+
+Yes → it belongs in the MVP. No → it stays on the longer-term roadmap.
+
+Briefings are research artifacts: persisted, versioned, and evidence-linked, so the platform accumulates decision history over time (the future memory of theses, targets, and trades builds on this).
 
 ---
 

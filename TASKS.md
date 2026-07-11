@@ -19,11 +19,67 @@ After every completed task:
 
 # Current Goal
 
-Build the best free quantitative research platform possible.
+**AlphaLab v0.1 — Investment Decision Support System** (ADR-009, 2026-07-12).
 
-Research comes before automation.
+Enter a ticker → receive a complete, evidence-backed investment briefing.
 
-Every sprint must deliver a usable feature.
+Research comes before automation. Every sprint must deliver a usable feature.
+
+The near-term filter for every task: *"Will this help me make a better investment decision on a stock I have already chosen to analyze?"*
+
+---
+
+# MVP Roadmap — Investment Briefing (v0.1)
+
+The original phases below remain the long-term map; the MVP re-sequences their contents into briefing-driven sprints. Architecture is unchanged — each sprint is a vertical slice through the existing layers.
+
+## Sprint A — Deterministic briefing core (NEXT)
+
+Deliverable: `/briefing/{ticker}` page with Technical Overview, Macro Environment, and Historical Context — all deterministic, no LLM.
+
+* [ ] A1. Yahoo Finance connector (daily OHLCV + basic quote/profile), recorded-fixture tests
+* [ ] A2. Market normalization: OHLCV schema (bitemporal, corporate-action aware at minimum via adjusted close)
+* [ ] A3. Market storage: hypertable + repositories (as-of reads, same rules as macro)
+* [ ] A4. Feature functions (pure, versioned — ADR-008): returns, rolling volatility, EMA, RSI, ATR, drawdown, 52-week range, relative volume, beta vs SPY
+* [ ] A5. Technical engine: deterministic trend/momentum/volatility summary with the numbers that justify each statement
+* [ ] A6. Inflation engine (re-scoped from Phase 1): inflation level + 3m/12m trend classification feeding the Macro Environment section
+* [ ] A7. Briefing assembly API: `GET /api/v1/briefing/{ticker}` returning structured sections + evidence; briefing persisted as a research artifact
+* [ ] A8. Frontend ticker page: search box → briefing (price chart, technical summary, macro chip, historical stats)
+
+## Sprint B — AI synthesis layer
+
+Deliverable: briefing gains Executive Summary, Bull Case, Bear Case, Risk Assessment, Confidence (labeled as model self-assessment), and "Questions to ask before investing."
+
+* [ ] B1. LLM Gateway (ADR-006): provider-agnostic, logged, cached, versioned prompts, structured outputs only
+* [ ] B2. Briefing synthesizer: LLM reasons ONLY over the structured evidence payload from Sprint A; every claim cites its evidence
+* [ ] B3. Decide default LLM provider/model (open question → ADR)
+
+## Sprint C — Events & news
+
+Deliverable: briefing gains Company News, Sector News, and Upcoming Catalysts.
+
+* [ ] C1. Earnings calendar connector (next earnings date, past surprises)
+* [ ] C2. Macro calendar (CPI prints, FOMC meetings)
+* [ ] C3. Company news: RSS/press releases + SEC filings (8-K) connector, ticker tagging
+* [ ] C4. Sector mapping + sector news rollup
+
+## Sprint D — Positioning data (source-risk gated)
+
+Deliverable: briefing gains Short Interest, Options Activity, Analyst Revisions — each item ships only if a reliable free source is verified (pre-task per connector, like Nowflation).
+
+* [ ] D1. Short interest (verify source: FINRA/Yahoo)
+* [ ] D2. Options snapshot: put/call ratio, IV vs HV, notable OI (verify source)
+* [ ] D3. Analyst estimates & revisions (verify source)
+
+## Sprint E — Portfolio context
+
+Deliverable: briefing gains Portfolio Impact; AlphaLab knows what you hold.
+
+* [ ] E1. Portfolio model: manual positions entry (design tables so multi-user scoping is a later migration, not a rewrite)
+* [ ] E2. Portfolio impact section: existing exposure, correlation of candidate vs holdings, concentration, beta contribution
+* [ ] E3. Dashboard: portfolio summary widget
+
+Future (kept in mind for model design, NOT implemented now): thesis journal — why bought, targets, risks, past briefings linked to trades.
 
 ---
 
@@ -73,7 +129,7 @@ No business logic yet.
 
 # Phase 1 — Macro Intelligence MVP
 
-Status: 🟡 In Progress (first vertical slice shipped 2026-07-11)
+Status: 🟡 In Progress (first vertical slice shipped 2026-07-11; remaining items re-sequenced into the MVP sprints above — inflation engine → Sprint A6, FRED/Treasury/BLS + rates → after Sprint C, AI summaries → Sprint B)
 
 Priority: ⭐⭐⭐⭐⭐
 
@@ -151,6 +207,8 @@ Every morning AlphaLab should answer:
 ---
 
 # Phase 2 — Market Intelligence MVP
+
+Status: 🟡 Absorbed into MVP Sprint A (connector, OHLCV schema, storage, feature store) — the "research page per stock" deliverable becomes the briefing page.
 
 Priority: ⭐⭐⭐⭐⭐
 

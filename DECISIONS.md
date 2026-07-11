@@ -445,6 +445,62 @@ Phases 1–2 are simpler. Redis deferral (ADR-007) follows directly.
 
 ---
 
+## ADR-009
+
+### Title
+
+AlphaLab v0.1 Is an Investment Decision Support System
+
+### Date
+
+2026-07-12
+
+### Status
+
+Accepted
+
+### Context
+
+The macro dashboard slice validated the architecture. The owner's investing style is discretionary: he already chooses which stock to analyze and does not need idea discovery. The highest-value near-term product is a complete, evidence-backed briefing for a chosen ticker.
+
+### Problem
+
+What should AlphaLab v0.1 optimize for, and does the architecture need to change?
+
+### Options Considered
+
+Option 1 — Continue the original phase order (macro → market → news → research platform), reaching a usable decision tool only after several horizontal phases.
+
+Option 2 — Re-sequence implementation around one workflow: ticker → investment briefing. Each briefing section pulls a vertical slice through the existing layers.
+
+### Decision
+
+Option 2. AlphaLab v0.1 is an **Investment Decision Support System**: enter a ticker, receive a briefing (technicals, macro, news, catalysts, positioning, bull/bear, risks, portfolio impact, confidence, open questions).
+
+The architecture is **unchanged** — connectors → normalization → storage → features → engines → research → AI analysts → applications. The pivot only reorders which connectors and engines are built first. Briefings are persisted as research artifacts (evidence-linked, versioned), consistent with "research is permanent."
+
+A new product principle is added to PROJECT.md: AlphaLab teaches the user *how to think*, not *what to think* — evidence, reasoning, historical context, trade-offs, and uncertainty over binary buy/sell recommendations. The final decision always belongs to the user.
+
+### Reasoning
+
+* Every briefing section is a consumer path through existing layers; nothing about the layering, bitemporality, or research-centricity changes.
+* The guiding filter ("will this help me make a better decision on a stock I already chose?") prevents horizontal infrastructure creep — consistent with the existing no-infrastructure-without-a-consumer rule.
+* Persisting briefings from day one seeds the future memory capability (thesis journal, prior analyses, trades) without implementing it now.
+
+### Consequences
+
+* TASKS.md gains MVP Sprints A–E (deterministic briefing core → AI synthesis → events/news → positioning data → portfolio context).
+* The inflation engine survives, re-scoped to feed the briefing's Macro Environment section (Sprint A6).
+* Remaining Phase 1 connectors (FRED, Treasury, BLS) move after Sprint C.
+* Positioning data (short interest, options, analyst revisions) is source-risk gated: each connector gets a Nowflation-style verification pre-task and ships only if a reliable free source exists.
+* Single-user simplicity is reaffirmed (ADR-007); new tables are designed so multi-user scoping is a later migration, not a rewrite.
+
+### Future Considerations
+
+Idea discovery, screeners, and alpha research return to the roadmap after the decision-support loop is genuinely useful.
+
+---
+
 # Session Journal
 
 ---
