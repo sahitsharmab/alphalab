@@ -29,7 +29,7 @@ Every sprint must deliver a usable feature.
 
 # Phase 0 — Foundation
 
-Status: 🟡 In Progress
+Status: ✅ Complete (2026-07-11)
 
 Objective
 
@@ -41,19 +41,19 @@ Scope changes from original plan: Redis removed (ADR-007), authentication skippe
 
 ### Documentation
 
-* [ ] 0.1 Apply architecture-review doc updates (ADRs, bitemporality, LLM gateway, naming fixes)
+* [x] 0.1 Apply architecture-review doc updates (ADRs, bitemporality, LLM gateway, naming fixes)
 
 ### Project Setup (ordered; dependencies in parentheses)
 
-* [ ] 0.2 Initialize repository: git, .gitignore, README.md, CHANGELOG.md, .env.example (0.1)
-* [ ] 0.3 Backend scaffold: Poetry, ruff, mypy (strict), pytest configuration (0.2)
-* [ ] 0.4 Core module: pydantic-settings configuration + structured logging + base error types (0.3)
-* [ ] 0.5 FastAPI app factory + /api/v1/health (liveness + DB readiness) + tests (0.4)
-* [ ] 0.6 Docker: backend Dockerfile, compose with Postgres+TimescaleDB, healthchecks (0.3)
-* [ ] 0.7 Database bootstrap: async SQLAlchemy engine, Alembic wired, Timescale extension migration (0.6)
-* [ ] 0.8 Frontend skeleton: Next.js + TypeScript, one page calling health endpoint, in compose (0.6)
-* [ ] 0.9 CI: GitHub Actions — ruff, mypy, pytest, frontend build (0.3)
-* [ ] 0.10 Session close-out: docs updated, deliverable verified end-to-end (all)
+* [x] 0.2 Initialize repository: git, .gitignore, README.md, CHANGELOG.md, .env.example (0.1)
+* [x] 0.3 Backend scaffold: Poetry, ruff, mypy (strict), pytest configuration (0.2)
+* [x] 0.4 Core module: pydantic-settings configuration + structured logging (0.3) — base error types deferred until the first consumer (Phase 1 connectors)
+* [x] 0.5 FastAPI app factory + /api/v1/health (liveness + DB readiness) + tests (0.4)
+* [x] 0.6 Docker: backend Dockerfile, compose with Postgres+TimescaleDB, healthchecks (0.3)
+* [x] 0.7 Database bootstrap: async SQLAlchemy engine, Alembic wired, Timescale extension migration (0.6)
+* [x] 0.8 Frontend skeleton: Next.js + TypeScript, one page calling health endpoint, in compose (0.6)
+* [x] 0.9 CI: GitHub Actions — ruff, mypy, pytest, frontend build (0.3)
+* [x] 0.10 Session close-out: docs updated, deliverable verified end-to-end (all)
 
 Deferred (needs a consumer first): Redis, authentication, event bus, feature materialization.
 

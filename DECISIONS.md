@@ -503,6 +503,48 @@ Trading automation remains intentionally out of scope until the research platfor
 
 ---
 
+## Session 002
+
+### Date
+
+2026-07-11
+
+### Goal
+
+Architecture review of the initial design, followed by Sprint 0 (Foundation) implementation.
+
+### Completed
+
+* Principal-level architecture review; findings approved by the owner with modifications (single-user posture, no auth, no Redis, keep folder structure, features on demand, Nowflation-first Phase 1).
+* ADR-004 (bitemporal data model), ADR-005 (experiment manifest), ADR-006 (LLM gateway), ADR-007 (single-user posture), ADR-008 (features on demand).
+* Updated ARCHITECTURE.md (bitemporality, LLM gateway, cross-cutting concerns), PROJECT.md (Connector naming per ADR-002), TASKS.md (revised Sprint 0, reordered Phase 1).
+* Sprint 0 implemented end-to-end: FastAPI backend with typed settings (pydantic-settings), structured logging (structlog), async SQLAlchemy + Alembic + TimescaleDB extension migration, `/api/v1/health` with DB readiness, pytest suite (6 tests), ruff + mypy strict clean, minimal Next.js frontend showing platform health, Docker Compose stack, GitHub Actions CI.
+* Created private GitHub repository `sahitsharmab/alphalab` and pushed `main`.
+
+### Challenges
+
+* Local machine had no Poetry (installed via pip) and Docker Desktop was stopped (started for end-to-end verification).
+* A stray package-lock.json in the user home directory confused Next.js workspace-root inference; pinned `outputFileTracingRoot`.
+
+### Architectural Decisions
+
+See ADR-004 through ADR-008.
+
+### Technical Debt
+
+* Frontend Docker image runs `next dev` (dev server) rather than a production build. Acceptable for a single-user local platform; revisit if the frontend is ever deployed.
+* Base error-type hierarchy deferred until the first consumer (Phase 1 connectors) exists.
+
+### Next Recommended Task
+
+Phase 1, first vertical slice: verify Nowflation API availability/licensing (pre-task), then Nowflation connector → macro normalization (bitemporal schema per ADR-004) → storage → inflation engine → dashboard.
+
+### Notes
+
+Commit messages must not include AI attribution lines (owner instruction, recorded in AGENTS.md Git Workflow).
+
+---
+
 # Open Questions
 
 Questions that have not yet been answered.
