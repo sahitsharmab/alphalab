@@ -1,0 +1,66 @@
+name: alphalab
+
+services:
+  db:
+    image: timescale/timescaledb:latest-pg16
+    environment:
+      POSTGRES_USER: ${ALPHALAB_DB_USER:-alphalab}
+      POSTGRES_PASSWORD: ${ALPHALAB_DB_PASSWORD:-alphalab}
+      POSTGRES_DB: ${ALPHALAB_DB_NAME:-alphalab}
+    ports:
+      - "5432:5432"
+    volumes:
+      - alphalab_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${ALPHALAB_DB_USER:-alphalab} -d ${ALPHALAB_DB_NAME:-alphalab}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    environment:
+      ALPHALAB_ENV: ${ALPHALAB_ENV:-development}
+      ALPHALAB_LOG_JSON: "true"
+      ALPHALAB_DB_HOST: db
+      ALPHALAB_DB_PORT: "5432"
+      ALPHALAB_DB_USER: ${ALPHALAB_DB_USER:-alphalab}
+      ALPHALAB_DB_PASSWORD: ${ALPHALAB_DB_PASSWORD:-alphalab}
+      ALPHALAB_DB_NAME: ${ALPHALAB_DB_NAME:-alphalab}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  alphalab_db_data:
