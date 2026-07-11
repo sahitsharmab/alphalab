@@ -1,0 +1,21 @@
+# Keep Docker build contexts lean.
+.git
+.github
+.claude
+docs
+
+# Python
+**/__pycache__
+**/.venv
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+
+# Node / Next.js
+**/node_modules
+frontend/.next
+frontend/out
+
+# Environments
+.env
+.env.*

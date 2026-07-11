@@ -134,10 +134,10 @@ Order (approved 2026-07-11): Nowflation first for immediate user value and an en
 
 ## Dashboard
 
-* [ ] Inflation
+* [x] Inflation (KPI tiles: YoY, index, coverage; 2026-07-12)
 * [ ] Rates
 * [ ] Liquidity
-* [ ] Historical charts
+* [x] Historical charts (YoY + index line charts, 90D/1Y/5Y/All ranges, as-of tooltips, data tables)
 * [ ] AI summary
 
 ---

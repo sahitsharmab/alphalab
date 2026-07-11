@@ -587,6 +587,41 @@ Macro dashboard slice (frontend chart of headline index/yoy consuming the observ
 
 ---
 
+## Session 004
+
+### Date
+
+2026-07-12
+
+### Goal
+
+Macro dashboard slice: visualize the Nowflation headline gauge in the frontend.
+
+### Completed
+
+* Decision: solo development commits directly to `main` (no PRs) with CI as the gate; revisit when a second contributor or risky branches appear.
+* Frontend dashboard (dark theme): KPI stat tiles (YoY with 30-day delta, index level, basket coverage), date-range presets (90D/1Y/5Y/All), two single-series line charts (YoY, index) with crosshair + tooltip, keyboard navigation (arrow keys), end-point direct labels, and collapsible data tables.
+* Charts are a hand-rolled SVG `LineChart` component (no chart library): full control over mark specs, ~150 lines, zero dependencies.
+* Series colors validated with the dataviz palette validator against the dark surface (#3987e5 / #199e70: CVD ΔE 69.8, contrast ≥3:1, all checks pass).
+* Typed API client (`frontend/lib/api.ts`) — components never call fetch directly.
+* Added root `.dockerignore` (the frontend build context was shipping 436MB of node_modules).
+* Verified by headless-browser screenshots against the live backend (real ingested data): layout, hover layer, and tick formats eyeballed; two ambiguity fixes made ("Jul ’25" ticks, explicit "Data as of" format).
+
+### Challenges
+
+* Local port 3000/5433 coordination between compose containers and the dev server during verification.
+
+### Technical Debt
+
+* Frontend has no automated tests yet (build + typecheck only in CI). Add component tests when the frontend grows real logic (e.g., scale/tick math extraction).
+* `playwright-core` added as a frontend devDependency for screenshot verification; harmless, used only locally.
+
+### Next Recommended Task
+
+Inflation engine (first Intelligence Engine): trend/regime classification over the gauge, exposed via API and a dashboard chip; then FRED connector with ALFRED vintages.
+
+---
+
 # Open Questions
 
 Questions that have not yet been answered.
