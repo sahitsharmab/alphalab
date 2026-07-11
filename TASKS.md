@@ -52,22 +52,33 @@ Follow-ups discovered:
 * [ ] Frontend component tests (scale/tick math, evidence rendering)
 * [ ] Extract shared bitemporal repository helper if a third bitemporal table appears
 
-## Sprint B — AI synthesis layer
+## Sprint C — Evidence Foundation (reordered BEFORE Sprint B; ADR-011)
 
-Deliverable: briefing gains Executive Summary, Bull Case, Bear Case, Risk Assessment, Confidence (labeled as model self-assessment), and "Questions to ask before investing."
+Deliverable: the workspace gains a **Company Evidence** section (SEC filings, press releases, quality headlines) — every item carrying source, category, and trust level. Evidence, not news.
 
+* [ ] C1. Source registry: configurable trust levels + source types (ADR-011)
+* [ ] C2. EvidenceRecord model + storage (bitemporal: published_at/retrieved_at; originals in raw_payloads; content-hash dedup) + repository
+* [ ] C3. SEC EDGAR connector (Tier 1, trust 10): ticker→CIK via company_tickers.json, submissions JSON + per-company Atom feeds; deterministic category mapping from filing type/8-K items (2.02→Earnings, 1.01→Regulatory/Agreement, …); UA header + ≤10 req/s (SEC policy)
+* [ ] C4. Sector mapping via SEC SIC codes (official, free) on the instruments catalog
+* [ ] C5. Press-release wire connector (Tier 1, trust 10 as company statements): PRNewswire RSS verified; GlobeNewswire/BusinessWire pre-task to find stable per-company feeds
+* [ ] C6. Tier 2 RSS connectors (trust 8): CNBC + MarketWatch (Reuters public RSS is dead — verified 2026-07-12); ticker tagging
+* [ ] C7. Evidence Engine: relevance filtering + categorization + workspace "Company Evidence" section (statements + evidence per ADR-010)
+* [ ] C8. Frontend: evidence section with trust badges, category chips, links to originals
+
+## Sprint C2 — Catalysts (Tier 3)
+
+Deliverable: workspace gains Upcoming Catalysts.
+
+* [ ] C2-1. Macro calendar from OFFICIAL release schedules (BLS CPI/jobs schedule, FOMC meeting calendar, BEA GDP schedule) — pre-task: parse formats
+* [ ] C2-2. Earnings date: pre-task to pick a reliable free source (Nasdaq API flaky — verified; candidates: company 8-K/PR announcements, FMP free tier w/ key); ship only if reliable (source-risk gate, ADR-009)
+
+## Sprint B — AI synthesis layer (after Evidence Foundation)
+
+Deliverable: workspace gains Executive Summary, Bull Case, Bear Case, Risk Assessment, Confidence (labeled as model self-assessment), and "Questions to ask before investing."
+
+* [ ] B0. Decide default LLM provider/model (open question → ADR); owner supplies API key
 * [ ] B1. LLM Gateway (ADR-006): provider-agnostic, logged, cached, versioned prompts, structured outputs only
-* [ ] B2. Briefing synthesizer: LLM reasons ONLY over the structured evidence payload from Sprint A; every claim cites its evidence
-* [ ] B3. Decide default LLM provider/model (open question → ADR)
-
-## Sprint C — Events & news
-
-Deliverable: briefing gains Company News, Sector News, and Upcoming Catalysts.
-
-* [ ] C1. Earnings calendar connector (next earnings date, past surprises)
-* [ ] C2. Macro calendar (CPI prints, FOMC meetings)
-* [ ] C3. Company news: RSS/press releases + SEC filings (8-K) connector, ticker tagging
-* [ ] C4. Sector mapping + sector news rollup
+* [ ] B2. Workspace synthesizer: LLM reasons ONLY over structured evidence (Sprint A numbers + Sprint C records); every claim cites evidence with source + trust level
 
 ## Sprint D — Positioning data (source-risk gated)
 
@@ -85,7 +96,11 @@ Deliverable: briefing gains Portfolio Impact; AlphaLab knows what you hold.
 * [ ] E2. Portfolio impact section: existing exposure, correlation of candidate vs holdings, concentration, beta contribution
 * [ ] E3. Dashboard: portfolio summary widget
 
-Future (kept in mind for model design, NOT implemented now): thesis journal — why bought, targets, risks, past briefings linked to trades.
+Future (kept in mind for model design, NOT implemented now):
+
+* Thesis journal — why bought, targets, risks, past briefings linked to trades.
+* **Decision Framework** (ADR-012) — configurable profiles combining standardized evidence signals per sector/asset class/market regime. Preserved contract: stable ids, source + trust on every evidence item, scores additive to (never replacing) evidence.
+* Tier 4 community sentiment (Twitter/X, Reddit, Stocktwits) — explicitly out of scope for v0.1 (ADR-011).
 
 ---
 

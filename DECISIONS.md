@@ -535,6 +535,80 @@ Engines return structured statements + evidence, never prose blobs. Future inter
 
 ---
 
+## ADR-011
+
+### Title
+
+Evidence, Not News: the EvidenceRecord Model, Trust Levels, and Source Tiers
+
+### Date
+
+2026-07-12
+
+### Status
+
+Accepted
+
+### Context
+
+The original roadmap framed Phase 3 as "News Intelligence." The owner's refinement: AlphaLab thinks in **evidence**, not news. The goal is the highest-quality evidence that could influence a decision, not the most headlines. v0.1 constraint: free sources only — official APIs and RSS preferred; reliability over completeness.
+
+### Decision
+
+1. **EvidenceRecord** replaces any "news" model as the normalized unit for all document-like evidence (filings, press releases, articles, economic releases). Fields: source, source_type, trust_level, published_at, retrieved_at, tickers, sector, category, url, title, normalized content, raw_payload reference (originals live in the existing immutable `raw_payloads` store), content_hash, provider metadata. Bitemporality (ADR-004) maps naturally: `published_at` is the knowledge time.
+2. **Trust levels** are a property of the **source registry**, not per-item AI output and not hardcoded per item. A configurable registry assigns each source a trust level (10 = SEC EDGAR/Fed/Treasury/BLS/company IR, 9 = FRED/Nowflation, 8 = CNBC/MarketWatch, ≤5 = blogs/social). Denormalized onto each record at ingestion for querying.
+3. **Trust measures provenance, not truth.** A 10/10 company press release is *authentically from the company*, not *objectively correct* — promotional bias is an interpretation problem for engines/AI, and high-trust content is still untrusted *instruction-wise* (prompt-injection rules of ADR-006 apply regardless of trust).
+4. **Source tiers set implementation order:** Tier 1 official (SEC EDGAR, press-release wires, Fed, Treasury, BLS, FRED, Nowflation) → Tier 2 quality financial RSS (CNBC, MarketWatch; Reuters public RSS no longer exists — verified 2026-07-12) → Tier 3 calendars (official release schedules preferred over third-party calendars) → Tier 4 social sentiment (explicitly out of scope for v0.1).
+5. **Free-only constraint** for v0.1; the connector abstraction is unchanged, so premium providers slot in later without architectural change.
+6. **Naming**: stored documents are `EvidenceRecord`s; the workspace API's citation objects remain `EvidenceItem`s (a rendered reference — soon able to point at an EvidenceRecord).
+
+### Reasoning
+
+Evidence-first keeps the platform aligned with "evidence before opinion." A source registry makes trust configurable and auditable. Verified availability (2026-07-12): SEC EDGAR submissions JSON + full-text search + per-company Atom feeds, Fed press RSS, Treasury FiscalData API, PRNewswire RSS, CNBC RSS, MarketWatch RSS all live; Reuters RSS dead; Nasdaq earnings API flaky; FRED requires a free API key.
+
+### Consequences
+
+Sprint C becomes the Evidence Foundation sprint (EvidenceRecord model + Tier 1 connectors), and it moves **ahead of Sprint B (LLM synthesis)** — synthesis is only as good as the evidence beneath it, and this also unblocks work while the LLM provider decision is pending.
+
+---
+
+## ADR-012
+
+### Title
+
+Decision Framework: Preserve the Contract, Defer the Engine
+
+### Date
+
+2026-07-12
+
+### Status
+
+Accepted (direction; no implementation)
+
+### Context
+
+Not all evidence matters equally for every asset: semiconductors lean on technicals/news/options; utilities on macro/rates; biotech on regulatory events and cash runway. The owner wants this capability named **Decision Framework** (a product capability answering *what evidence matters, how much, why, and under which regime*), not "weighting" (an implementation detail).
+
+### Decision
+
+No weighting engine now. Evidence is presented independently. What we preserve **today** so the framework can arrive later without rework:
+
+1. Sections, statements, and evidence carry **stable ids** and machine-readable values (already true since ADR-010).
+2. Every evidence item/record carries **source and trust level** (ADR-011).
+3. Engines may later expose **standardized signal scores** alongside statements; the schema treats scores as additive fields, never replacements for evidence.
+4. Future **decision profiles** (per sector/asset class/market regime) are configuration that combines those scores — pure consumers of the existing contract.
+
+### Reasoning
+
+The expensive part of a weighting system is retrofitting traceable, scored, source-attributed evidence. That shape is being built anyway. The cheap part — the combining function — can wait until there is enough evidence variety for weights to mean something.
+
+### Consequences
+
+A "Decision Framework" phase is added to the long-term roadmap. Nothing else changes now.
+
+---
+
 # Session Journal
 
 ---
