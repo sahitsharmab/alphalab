@@ -73,6 +73,8 @@ No business logic yet.
 
 # Phase 1 — Macro Intelligence MVP
 
+Status: 🟡 In Progress (first vertical slice shipped 2026-07-11)
+
 Priority: ⭐⭐⭐⭐⭐
 
 Goal
@@ -87,26 +89,28 @@ The objective is to transform public macroeconomic data into useful investment i
 
 Order (approved 2026-07-11): Nowflation first for immediate user value and an end-to-end architecture demonstration; FRED, Treasury, BLS follow as complementary macro connectors.
 
-* [ ] Verify Nowflation API availability, stability, and licensing (pre-task; fall back to FRED-first if unusable)
-* [ ] Nowflation Connector
+* [x] Verify Nowflation API availability, stability, and licensing (2026-07-11: CSV exports open, no key/rate limits; no explicit license — personal use OK, revisit before redistribution)
+* [x] Nowflation Connector (headline gauge; components dataset is a follow-up)
+* [ ] Nowflation components dataset (per-component inflation, ~2.5MB CSV)
 * [ ] FRED Connector (use ALFRED vintages — validates the bitemporal model, ADR-004)
 * [ ] Treasury Connector
 * [ ] BLS Connector
+* [ ] Scheduler: daily automatic ingestion (manual POST endpoint exists)
 
 ---
 
 ## Normalization
 
-* [ ] Macro schema (bitemporal: observation_date + as_of, ADR-004)
-* [ ] Inflation schema
+* [x] Macro schema (bitemporal: observation_date + as_of, ADR-004) — MacroObservationIn/Out, series catalog
+* [x] Inflation schema (Nowflation headline: index, yoy, coverage series)
 * [ ] Rates schema
 
 ---
 
 ## Storage
 
-* [ ] Raw macro tables
-* [ ] Normalized macro tables (bitemporal)
+* [x] Raw macro tables (immutable raw_payloads, content-hash deduplicated)
+* [x] Normalized macro tables (bitemporal macro_observations hypertable + macro_series catalog)
 * [ ] Data quality checks (gap detection, staleness, outlier flags)
 
 ---

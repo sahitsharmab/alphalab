@@ -9,6 +9,24 @@ jobs:
   backend:
     name: Backend (lint, typecheck, test)
     runs-on: ubuntu-latest
+    services:
+      timescaledb:
+        image: timescale/timescaledb:latest-pg16
+        env:
+          POSTGRES_USER: alphalab
+          POSTGRES_PASSWORD: alphalab
+          POSTGRES_DB: alphalab
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U alphalab"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      ALPHALAB_DB_HOST: 127.0.0.1
+      ALPHALAB_DB_PORT: "5432"
+      ALPHALAB_REQUIRE_DB: "1"
     defaults:
       run:
         working-directory: backend

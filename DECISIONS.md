@@ -545,13 +545,54 @@ Commit messages must not include AI attribution lines (owner instruction, record
 
 ---
 
+## Session 003
+
+### Date
+
+2026-07-11
+
+### Goal
+
+Phase 1 first vertical slice: Nowflation → normalization → bitemporal storage → API.
+
+### Completed
+
+* Pre-task: verified Nowflation. CSV export endpoints are open (no key, no advertised rate limits): `/api/inflation/export/headline.csv` (daily gauge since 2018: date, index_value, yoy fraction, coverage_pct fraction) and `components.csv`. The dashboard's JSON endpoints 404 outside the browser and are undocumented — the connector uses only CSV exports. No explicit license text; site is promoted as Open Data. Personal research use OK; revisit before any redistribution.
+* Connector layer: `BaseConnector` (metadata/health contract, retry with exponential backoff on 429/5xx/transport errors) + `NowflationConnector`.
+* Normalization: headline CSV → three series (`nowflation.headline.index|yoy|coverage`); empty cells skipped, malformed rows fail loudly.
+* Storage: immutable `raw_payloads` (content-hash dedup), `macro_series` catalog, bitemporal `macro_observations` TimescaleDB hypertable (PK series_id+observation_date+as_of, 1-year chunks). Migration 0002.
+* Repositories with the bitemporal write rule (insert only new/changed values) and as-of reads (latest revision per date with as_of <= requested).
+* `MacroIngestionService` orchestrating the slice in one transaction; API: GET /macro/series, GET /macro/series/{id}/observations (start/end/as_of), POST /macro/ingest/nowflation.
+* Tests: 20 passing — connector (mock transport, retry/fatal paths), normalization, and 3 integration tests against a real TimescaleDB (fresh `alphalab_test` DB per run) covering ingest, idempotency, and as-of revision queries. CI now runs a TimescaleDB service with ALPHALAB_REQUIRE_DB=1.
+* Live verification: ingested 8,971 real observations; re-ingest inserted 0 (idempotent); as-of stamps correct.
+* Git workflow decision: solo development commits directly to main (CI on every push); PRs deferred until a second contributor or riskier changes warrant branches.
+
+### Challenges
+
+* A native PostgreSQL service on the host already listens on 5432, shadowing Docker's published port. Compose now publishes the DB on host port 5433 (container-internal stays 5432).
+* `Numeric(20,8)` serialized with trailing zeros; API now emits normalized plain decimal strings.
+
+### Technical Debt
+
+* Ingestion is manual (POST endpoint); scheduler pending.
+* `health()` on the Nowflation connector downloads the full headline CSV (~100KB) — cheap but not free; consider a lighter probe if it ever matters.
+
+### Next Recommended Task
+
+Macro dashboard slice (frontend chart of headline index/yoy consuming the observations API), then the inflation engine (regime classification) and FRED connector with ALFRED vintages.
+
+### Notes
+
+`as_of` for Nowflation = retrieval time (no publication vintages exposed). True vintage accumulation begins with our own repeated ingestion runs.
+
+---
+
 # Open Questions
 
 Questions that have not yet been answered.
 
 * Should vector search be introduced for research? (Defer; `pgvector` slots into existing Postgres when the knowledge base warrants semantic search.)
 * Which LLM provider/model should the LLM Gateway default to? (Decide when the first analyst is built.)
-* Nowflation: confirm API availability, stability, and licensing terms before Phase 1 connector work begins.
 
 Resolved and moved into ADRs:
 

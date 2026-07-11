@@ -3,6 +3,7 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+import httpx
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,7 +12,7 @@ from app import __version__
 from app.api.v1.router import api_router
 from app.config.logging import configure_logging
 from app.config.settings import Settings, get_settings
-from app.database.engine import create_engine
+from app.database.engine import create_engine, create_session_factory
 
 logger = structlog.get_logger(__name__)
 
@@ -25,14 +26,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     configure_logging(settings.log_level, settings.log_json)
 
-    # Engine construction is lazy (no connection until first use), so it is
-    # safe outside the lifespan; the lifespan owns disposal.
+    # Engine and client construction are lazy (no connection until first
+    # use), so both are safe outside the lifespan; the lifespan owns cleanup.
     engine = create_engine(settings.database_url)
+    session_factory = create_session_factory(engine)
+    http_client = httpx.AsyncClient(timeout=settings.http_timeout_seconds)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         logger.info("application_startup", environment=str(settings.env), version=__version__)
         yield
+        await http_client.aclose()
         await engine.dispose()
         logger.info("application_shutdown")
 
@@ -44,6 +48,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.settings = settings
     app.state.engine = engine
+    app.state.session_factory = session_factory
+    app.state.http_client = http_client
 
     app.add_middleware(
         CORSMiddleware,

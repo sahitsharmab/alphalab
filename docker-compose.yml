@@ -8,7 +8,8 @@ services:
       POSTGRES_PASSWORD: ${ALPHALAB_DB_PASSWORD:-alphalab}
       POSTGRES_DB: ${ALPHALAB_DB_NAME:-alphalab}
     ports:
-      - "5432:5432"
+      # Host port 5433: many machines run a native PostgreSQL on 5432.
+      - "5433:5432"
     volumes:
       - alphalab_db_data:/var/lib/postgresql/data
     healthcheck:

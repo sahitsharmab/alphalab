@@ -37,12 +37,19 @@ class Settings(BaseSettings):
     log_json: bool = False
 
     db_host: str = "localhost"
-    db_port: int = 5432
+    # Host-side default matches docker-compose's published port (5433 to
+    # avoid clashing with native PostgreSQL installs); inside the compose
+    # network the backend overrides this with db:5432.
+    db_port: int = 5433
     db_user: str = "alphalab"
     db_password: str = "alphalab"
     db_name: str = "alphalab"
 
     cors_origins: list[str] = ["http://localhost:3000"]
+
+    # External providers
+    nowflation_base_url: str = "https://nowflation.com"
+    http_timeout_seconds: float = 30.0
 
     @property
     def database_url(self) -> str:

@@ -40,7 +40,7 @@ docker compose up --build
 
 - Backend: http://localhost:8000 — health at `/api/v1/health`, docs at `/docs`
 - Frontend: http://localhost:3000
-- Database: localhost:5432
+- Database: localhost:5433 (host port 5433 avoids clashing with native PostgreSQL installs)
 
 ### Local backend development
 

@@ -12,7 +12,9 @@ def _clean_settings(**overrides: object) -> Settings:
 def test_defaults_are_development() -> None:
     settings = _clean_settings()
     assert settings.env is Environment.DEVELOPMENT
-    assert settings.db_port == 5432
+    # Host-side default is 5433: compose publishes the DB there to avoid
+    # colliding with native PostgreSQL installs on 5432.
+    assert settings.db_port == 5433
 
 
 def test_database_url_composition() -> None:
