@@ -42,6 +42,10 @@ def make_yahoo_chart_json(
 ) -> str:
     """A minimal Yahoo v8 chart payload with daily bars ending today."""
     end = end or datetime.now(UTC)
+    # Yahoo daily bars are timestamped during/after the exchange session.
+    # Pin synthetic bars to 16:00 UTC so a DST transition cannot map two
+    # consecutive UTC midnights onto the same New York calendar date.
+    end = end.replace(hour=16, minute=0, second=0, microsecond=0)
     n = len(closes)
     timestamps = [int((end - timedelta(days=n - 1 - i)).timestamp()) for i in range(n)]
     return json.dumps(

@@ -175,7 +175,7 @@ Order (approved 2026-07-11): Nowflation first for immediate user value and an en
 * [ ] FRED Connector (use ALFRED vintages — validates the bitemporal model, ADR-004)
 * [ ] Treasury Connector
 * [ ] BLS Connector
-* [ ] Scheduler: daily automatic ingestion (manual POST endpoint exists)
+* [x] Scheduler: daily automatic ingestion for global datasets (Nowflation + Fed calendar); ticker-scoped scheduling waits for a watchlist/universe (2026-07-12)
 
 ---
 

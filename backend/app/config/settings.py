@@ -7,6 +7,7 @@ Cross-Cutting Concerns). Secrets are never hardcoded.
 from enum import StrEnum
 from functools import lru_cache
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -64,6 +65,10 @@ class Settings(BaseSettings):
     # Re-fetch market history when the newest stored bar is older than this
     # (covers weekends + holidays without refetching every request).
     market_staleness_days: int = 4
+
+    # Scheduler (enabled by the deployed process; off by default for library/tests).
+    scheduler_enabled: bool = False
+    scheduler_interval_hours: float = Field(default=24.0, gt=0)
 
     @property
     def database_url(self) -> str:

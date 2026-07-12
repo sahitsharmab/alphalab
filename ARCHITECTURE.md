@@ -627,6 +627,14 @@ Examples
 
 Business logic never belongs inside scheduled jobs.
 
+The current single-process scheduler runs existing ingestion-service callbacks
+immediately on backend startup and at a configurable fixed interval. Each job
+owns a fresh database session, failures are isolated between jobs, and shutdown
+cancels outstanding loops cleanly. Docker Compose enables a 24-hour interval.
+Nowflation and the Federal Reserve calendar are global scheduled datasets;
+ticker-scoped market/evidence ingestion remains on-request until a watchlist or
+universe provides an explicit scheduling scope.
+
 ---
 
 # API

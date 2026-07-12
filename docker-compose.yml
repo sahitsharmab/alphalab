@@ -39,6 +39,8 @@ services:
       ALPHALAB_DB_NAME: ${ALPHALAB_DB_NAME:-alphalab}
       # SEC requires contact info in the User-Agent; set it in .env.
       ALPHALAB_SEC_USER_AGENT: ${ALPHALAB_SEC_USER_AGENT:-AlphaLab/0.1 (personal research)}
+      ALPHALAB_SCHEDULER_ENABLED: ${ALPHALAB_SCHEDULER_ENABLED:-true}
+      ALPHALAB_SCHEDULER_INTERVAL_HOURS: ${ALPHALAB_SCHEDULER_INTERVAL_HOURS:-24}
     ports:
       - "8000:8000"
     depends_on:

@@ -967,6 +967,34 @@ Sprint B (LLM Gateway + synthesis — needs owner's provider decision + key) or 
 
 ---
 
+## Session 009
+
+### Date
+
+2026-07-12
+
+### Goal
+
+Implement the highest-value unblocked fallback because neither the LLM nor FRED API key was configured: automatic ingestion scheduling.
+
+### Completed
+
+* Added a small async periodic scheduler that runs jobs immediately and at a configurable interval, isolates failures, and shuts down cleanly.
+* Wired global Nowflation and Federal Reserve calendar refreshes through their existing ingestion services; no connector, normalization, or storage logic lives in scheduled jobs.
+* Enabled a 24-hour interval in Docker Compose while keeping library/test application factories opt-in.
+* Added scheduler unit coverage and corrected a date-sensitive Yahoo test fixture whose UTC-midnight timestamps collided across the New York DST transition.
+* 65 backend tests pass; ruff, formatting, and strict mypy are clean. Live container verification confirmed both jobs and a real MU workspace.
+
+### Architectural Notes
+
+An in-process scheduler is sufficient for the current single-process, single-user posture (ADR-007). If deployment gains multiple backend replicas, scheduling must move to one elected/dedicated process to avoid duplicate provider traffic. Ticker-scoped scheduling is intentionally deferred until a watchlist or explicit universe defines what to refresh.
+
+### Next Recommended Task
+
+Sprint B once the owner provides an actual provider/model selection and `ALPHALAB_LLM_API_KEY`; otherwise C2-1b once `ALPHALAB_FRED_API_KEY` is available.
+
+---
+
 # Open Questions
 
 Questions that have not yet been answered.
