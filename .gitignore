@@ -37,3 +37,4 @@ Thumbs.db
 
 # Docker
 docker/volumes/
+backend/scripts/m1a_results/
