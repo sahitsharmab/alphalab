@@ -22,6 +22,8 @@ class EvidenceItem(BaseModel):
     display: str  # human-readable rendering, e.g. "31.7"
     as_of: str  # date the underlying data describes (ISO)
     source: str  # provenance, e.g. "yahoo:MU daily bars"
+    trust_level: int | None = None  # source trust 0-10 where known (ADR-011)
+    url: str | None = None  # link to the original document where one exists
 
 
 class Statement(BaseModel):

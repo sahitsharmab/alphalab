@@ -8,9 +8,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_sec_edgar_connector, get_session
+from app.api.deps import get_sec_edgar_connector, get_session, get_yahoo_news_connector
 from app.connectors.base import ConnectorError
 from app.connectors.sec_edgar import SecEdgarConnector
+from app.connectors.yahoo_news import YahooNewsConnector
 from app.normalization import NormalizationError
 from app.repositories.evidence import EvidenceRepository
 from app.schemas.evidence import (
@@ -27,10 +28,11 @@ _SYMBOL_PATTERN = re.compile(r"^[A-Za-z0-9.\-]{1,10}$")
 
 
 class EvidenceResponse(BaseModel):
-    """Records plus an optional ingestion report (when a fetch happened)."""
+    """Records plus optional ingestion reports (when fetches happened)."""
 
     records: list[EvidenceRecordOut]
-    ingestion: EvidenceIngestionReport | None = None
+    ingestion: EvidenceIngestionReport | None = None  # SEC EDGAR
+    news_ingestion: EvidenceIngestionReport | None = None  # ticker news
 
 
 @router.get("/{symbol}")
@@ -38,6 +40,7 @@ async def get_evidence(
     symbol: str,
     session: Annotated[AsyncSession, Depends(get_session)],
     connector: Annotated[SecEdgarConnector, Depends(get_sec_edgar_connector)],
+    news_connector: Annotated[YahooNewsConnector, Depends(get_yahoo_news_connector)],
     category: Annotated[list[EvidenceCategory] | None, Query()] = None,
     min_trust: Annotated[int | None, Query(ge=0, le=10)] = None,
     since: Annotated[datetime | None, Query()] = None,
@@ -49,9 +52,10 @@ async def get_evidence(
         raise HTTPException(status_code=422, detail=f"invalid symbol: {symbol!r}")
     symbol = symbol.upper()
 
-    service = EvidenceIngestionService(session, connector)
+    service = EvidenceIngestionService(session, connector, news_connector)
     try:
         ingestion = await service.ensure_sec_filings(symbol, force=refresh)
+        news_ingestion = await service.ensure_ticker_news(symbol, force=refresh)
         await session.commit()
     except UnknownSymbolError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
@@ -66,4 +70,4 @@ async def get_evidence(
         since=since,
         limit=limit,
     )
-    return EvidenceResponse(records=records, ingestion=ingestion)
+    return EvidenceResponse(records=records, ingestion=ingestion, news_ingestion=news_ingestion)

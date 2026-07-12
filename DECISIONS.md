@@ -904,6 +904,41 @@ The platform's core abstraction is now named: AlphaLab is an Evidence Engine (AD
 
 ---
 
+## Session 007
+
+### Date
+
+2026-07-12
+
+### Goal
+
+Sprint C completion (C5–C8): evidence sources + the workspace Company Evidence section.
+
+### Completed
+
+* Pre-task verdicts: per-company press-release wire feeds are not free-viable (GlobeNewswire per-org URLs are an unguessable/general-feed trap, BusinessWire times out, PRNewswire aggregate-only) — EDGAR 8-K stays the canonical company-statements channel. Yahoo per-ticker news RSS verified: relevant but commentary-heavy → trust 7, category market_news, entity role "mentioned".
+* Generic RSS normalization with defusedxml (feeds are untrusted XML), YahooNewsConnector, registry entry.
+* Evidence Engine (`engines/evidence.py`): deterministic Company Evidence section — filings summary (90-day window), latest earnings filing, coverage with explicit "aggregated commentary, not primary evidence" framing.
+* Workspace integration: best-effort evidence ingestion (SEC + news) — source outages degrade the section, never break the workspace. `EvidenceItem` gained optional `trust_level` and `url` (additive per ADR-012).
+* Frontend: evidence tables link to original documents and show trust badges.
+* Evidence API now also ingests ticker news (separate `news_ingestion` report).
+* 58 backend tests passing; verified live (MU: 3 filings/90d + 20 coverage items) and visually via screenshot.
+
+### Challenges
+
+* The GlobeNewswire probe returned HTTP 200 with the *general* wire feed for an invented per-org URL — a silent wrong-content trap; only item-level inspection caught it. Lesson: verify feed *content*, not just status codes.
+
+### Technical Debt
+
+* CNBC/MarketWatch general feeds deferred until a market-context (non-per-company) section exists.
+* Yahoo news descriptions are stored raw; no relevance scoring yet (candidate for the Decision Framework era).
+
+### Next Recommended Task
+
+Sprint C2 (catalysts from official release schedules; earnings-date pre-task) or Sprint B (LLM Gateway + synthesis — needs the owner's provider decision and API key).
+
+---
+
 # Open Questions
 
 Questions that have not yet been answered.

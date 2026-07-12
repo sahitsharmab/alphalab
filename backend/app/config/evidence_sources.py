@@ -64,6 +64,14 @@ SOURCES: dict[str, SourceDefinition] = {
             source_type=SourceType.DATA_PROVIDER,
             trust_level=8,
         ),
+        SourceDefinition(
+            source_id="yahoo_news",
+            name="Yahoo Finance News (per-ticker aggregation)",
+            source_type=SourceType.MEDIA,
+            # Commentary-heavy aggregation of mixed outlets: useful context,
+            # weak evidence. The trust badge in the UI does the honest work.
+            trust_level=7,
+        ),
         # --- Tier 2: quality financial media (context, not facts) ---
         SourceDefinition(
             source_id="cnbc",

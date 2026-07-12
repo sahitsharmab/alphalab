@@ -67,6 +67,8 @@ export interface EvidenceItem {
   display: string;
   as_of: string;
   source: string;
+  trust_level?: number | null;
+  url?: string | null;
 }
 
 export interface WorkspaceStatement {

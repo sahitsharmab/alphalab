@@ -31,7 +31,20 @@ function EvidenceTable({ items }: { items: EvidenceItem[] }) {
       <tbody>
         {items.map((item) => (
           <tr key={item.id} style={{ borderTop: `1px solid ${theme.grid}` }}>
-            <td style={{ padding: "4px 8px", color: theme.inkSecondary }}>{item.label}</td>
+            <td style={{ padding: "4px 8px", color: theme.inkSecondary }}>
+              {item.url ? (
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: theme.inkSecondary }}
+                >
+                  {item.label} ↗
+                </a>
+              ) : (
+                item.label
+              )}
+            </td>
             <td
               style={{
                 padding: "4px 8px",
@@ -43,7 +56,24 @@ function EvidenceTable({ items }: { items: EvidenceItem[] }) {
               {item.display}
             </td>
             <td style={{ padding: "4px 8px", color: theme.inkMuted }}>{item.as_of}</td>
-            <td style={{ padding: "4px 8px", color: theme.inkMuted }}>{item.source}</td>
+            <td style={{ padding: "4px 8px", color: theme.inkMuted }}>
+              {item.source}
+              {item.trust_level != null && (
+                <span
+                  title="Source trust level (provenance, not truth)"
+                  style={{
+                    marginLeft: 6,
+                    padding: "1px 6px",
+                    borderRadius: 999,
+                    border: `1px solid ${theme.border}`,
+                    fontSize: 10,
+                    color: item.trust_level >= 9 ? theme.deltaGood : theme.inkSecondary,
+                  }}
+                >
+                  {item.trust_level}/10
+                </span>
+              )}
+            </td>
           </tr>
         ))}
       </tbody>

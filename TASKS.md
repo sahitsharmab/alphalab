@@ -62,10 +62,10 @@ Deliverable: the workspace gains a **Company Evidence** section (SEC filings, pr
 * [ ] C3-followup. Full filing text retrieval (records currently carry title/metadata/URL, not document text)
 * [ ] C3-followup. Per-company EDGAR Atom feed polling for incremental updates (submissions JSON refetch is fine at current scale)
 * [ ] C4. Sector mapping via SEC SIC codes (official, free) on the instruments catalog
-* [ ] C5. Press-release wire connector (Tier 1, trust 10 as company statements): PRNewswire RSS verified; GlobeNewswire/BusinessWire pre-task to find stable per-company feeds
-* [ ] C6. Tier 2 RSS connectors (trust 8): CNBC + MarketWatch (Reuters public RSS is dead — verified 2026-07-12); ticker tagging
-* [ ] C7. Evidence Engine: relevance filtering + categorization + workspace "Company Evidence" section (statements + evidence per ADR-010)
-* [ ] C8. Frontend: evidence section with trust badges, category chips, links to originals
+* [x] C5. Press-release wires: pre-task verdict (2026-07-12) — per-company feeds are NOT free-viable (GlobeNewswire org URLs unguessable/general-feed trap, BusinessWire times out, PRNewswire aggregate-only). EDGAR 8-K remains the canonical company-statements channel (material PRs are filed as exhibits). Revisit if a stable per-company feed source appears.
+* [x] C6 (re-scoped). Yahoo per-ticker news RSS connector (trust 7, media, role "mentioned") + generic safe RSS normalization (defusedxml). CNBC/MarketWatch general feeds deferred to a future market-context section (they are not per-company).
+* [x] C7. Evidence Engine: deterministic Company Evidence section (filings summary, latest earnings filing, coverage with explicit trust framing); wired into the workspace with best-effort ingestion (source outages degrade, never break)
+* [x] C8. Frontend: evidence tables now render links to originals + trust badges (provenance tooltip)
 
 ## Sprint C2 — Catalysts (Tier 3)
 

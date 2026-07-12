@@ -12,24 +12,24 @@ the project documents in this order:
 
 ---
 
-## Current State (2026-07-12, commit `7395c77`)
+## Current State (2026-07-12, Sprint C complete)
 
 Everything below is implemented, tested, verified live, and green in CI:
 
 * **Sprint 0** — FastAPI backend, TimescaleDB, Alembic (4 migrations), Next.js frontend, Docker Compose, GitHub Actions CI.
 * **Macro slice** — Nowflation connector → bitemporal `macro_observations` → `GET /api/v1/macro/...` → dashboard with charts (`frontend/app/page.tsx`).
 * **Sprint A: Investment Workspace** — Yahoo connector → bitemporal `market_bars` → pure feature functions → Technical/Historical/Inflation engines → `GET /api/v1/workspace/{symbol}` → `/workspace/[symbol]` page. Every statement carries evidence ids; the `WorkspaceSection` validator rejects untraceable claims.
-* **Sprint C (C1–C3): Evidence foundation** — source registry with trust levels (`backend/app/config/evidence_sources.py`), `evidence_records` + `evidence_entities` (graph-ready, ADR-013), SEC EDGAR connector, `GET /api/v1/evidence/{symbol}`.
-* 54 backend tests (unit + integration against real TimescaleDB), ruff + mypy `--strict` clean.
+* **Sprint C (complete): Evidence Engine** — source registry with trust levels (`backend/app/config/evidence_sources.py`), `evidence_records` + `evidence_entities` (graph-ready, ADR-013), SEC EDGAR connector, Yahoo per-ticker news RSS connector (trust 7, defusedxml parsing), `GET /api/v1/evidence/{symbol}`, and the workspace **Company Evidence** section (filings + coverage, trust badges, links to originals, best-effort ingestion that degrades on source outages).
+* 58 backend tests (unit + integration against real TimescaleDB), ruff + mypy `--strict` clean.
 
 **Repo:** https://github.com/sahitsharmab/alphalab — solo dev, direct commits to `main`, CI is the gate (no PRs). Commit messages must NEVER contain AI attribution lines (AGENTS.md rule).
 
 ## What Is NOT Built Yet (next work, in order)
 
-1. **C5–C8** (TASKS.md): press-release wire connector (pre-task: verify GlobeNewswire/BusinessWire feed URLs; PRNewswire RSS verified working), CNBC + MarketWatch RSS connectors, Evidence Engine relevance/categorization, and the workspace **Company Evidence** section (frontend, with trust badges).
-2. **Sprint C2**: catalysts from OFFICIAL release schedules (BLS/FOMC/BEA); earnings-date source needs a pre-task (Nasdaq API is flaky — verified).
-3. **Sprint B**: LLM Gateway (ADR-006) + workspace synthesis. **Blocked on the owner choosing the LLM provider/model and supplying an API key** (task B0).
-4. Scheduler for automatic ingestion (currently manual/auto-on-request).
+1. **Sprint C2**: catalysts from OFFICIAL release schedules (BLS/FOMC/BEA); earnings-date source needs a pre-task (Nasdaq API is flaky — verified). Note: per-company press-release wires were investigated and are NOT free-viable (Session 007); EDGAR 8-K is the company-statements channel.
+2. **Sprint B**: LLM Gateway (ADR-006) + workspace synthesis. **Blocked on the owner choosing the LLM provider/model and supplying an API key** (task B0).
+3. Scheduler for automatic ingestion (currently manual/auto-on-request).
+4. Deferred: CNBC/MarketWatch general feeds (need a market-context section), full filing text retrieval, FRED/Treasury/BLS macro connectors.
 
 ## Non-Negotiable Invariants
 

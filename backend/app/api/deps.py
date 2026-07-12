@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.connectors.nowflation import NowflationConnector
 from app.connectors.sec_edgar import SecEdgarConnector
 from app.connectors.yahoo import YahooConnector
+from app.connectors.yahoo_news import YahooNewsConnector
 
 
 async def get_session(request: Request) -> AsyncIterator[AsyncSession]:
@@ -52,4 +53,12 @@ def get_sec_edgar_connector(request: Request) -> SecEdgarConnector:
         data_base_url=settings.sec_data_base_url,
         www_base_url=settings.sec_www_base_url,
         user_agent=settings.sec_user_agent,
+    )
+
+
+def get_yahoo_news_connector(request: Request) -> YahooNewsConnector:
+    settings = request.app.state.settings
+    return YahooNewsConnector(
+        client=get_http_client(request),
+        base_url=settings.yahoo_news_base_url,
     )

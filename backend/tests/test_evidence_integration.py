@@ -9,9 +9,10 @@ from collections.abc import AsyncIterator
 import httpx
 import pytest
 
-from app.api.deps import get_sec_edgar_connector
+from app.api.deps import get_sec_edgar_connector, get_yahoo_news_connector
 from app.config.settings import Settings
 from app.connectors.sec_edgar import SecEdgarConnector
+from app.connectors.yahoo_news import YahooNewsConnector
 from app.main import create_app
 from tests.test_sec_normalization import make_submissions_json
 
@@ -21,6 +22,12 @@ TICKER_MAP = json.dumps(
 SUBMISSIONS = make_submissions_json(
     forms=["8-K", "10-Q", "4", "10-K"],
     items=["2.02,9.01", "", "", ""],
+)
+NEWS_RSS = (
+    '<?xml version="1.0"?><rss version="2.0"><channel><item>'
+    "<title>Semis rally on AI demand</title><link>https://news.test/a</link>"
+    "<pubDate>Sat, 11 Jul 2026 19:00:00 +0000</pubDate><guid>news-a</guid>"
+    "</item></channel></rss>"
 )
 
 
@@ -47,6 +54,12 @@ async def evidence_client(
         data_base_url="https://sec.test",
         www_base_url="https://sec.test",
     )
+    app.dependency_overrides[get_yahoo_news_connector] = lambda: YahooNewsConnector(
+        client=httpx.AsyncClient(
+            transport=httpx.MockTransport(lambda request: httpx.Response(200, text=NEWS_RSS))
+        ),
+        base_url="https://news.test",
+    )
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         client.app = app  # type: ignore[attr-defined]
@@ -62,18 +75,24 @@ async def test_evidence_end_to_end(evidence_client: httpx.AsyncClient) -> None:
     body = response.json()
     assert body["ingestion"]["records_parsed"] == 3  # Form 4 excluded
     assert body["ingestion"]["records_inserted"] == 3
+    assert body["news_ingestion"]["records_inserted"] == 1
 
     records = body["records"]
-    assert len(records) == 3
-    first = records[0]
-    assert first["source_id"] == "sec_edgar"
-    assert first["source_name"] == "SEC EDGAR"
-    assert first["trust_level"] == 10  # registry-driven (ADR-011)
-    assert {r["category"] for r in records} == {"earnings", "sec_filing"}
+    assert len(records) == 4  # 3 filings + 1 news item
+    filings = [r for r in records if r["source_id"] == "sec_edgar"]
+    news = [r for r in records if r["source_id"] == "yahoo_news"]
+    assert filings[0]["source_name"] == "SEC EDGAR"
+    assert filings[0]["trust_level"] == 10  # registry-driven (ADR-011)
+    assert news[0]["trust_level"] == 7
+    assert {r["category"] for r in filings} == {"earnings", "sec_filing"}
+    assert news[0]["category"] == "market_news"
     assert all(
-        {"entity_type": "instrument", "entity_key": "MU", "role": "subject"} in r["entities"]
+        any(e["entity_type"] == "instrument" and e["entity_key"] == "MU" for e in r["entities"])
         for r in records
     )
+    # Filings are statements BY the company; news only mentions it.
+    assert filings[0]["entities"][0]["role"] == "subject"
+    assert news[0]["entities"][0]["role"] == "mentioned"
 
 
 async def test_evidence_reingest_is_idempotent(evidence_client: httpx.AsyncClient) -> None:
@@ -84,9 +103,12 @@ async def test_evidence_reingest_is_idempotent(evidence_client: httpx.AsyncClien
     third = (await evidence_client.get("/api/v1/evidence/MU?refresh=true")).json()
 
     assert first["ingestion"]["records_inserted"] == 3
+    assert first["news_ingestion"]["records_inserted"] == 1
     assert second["ingestion"] is None
+    assert second["news_ingestion"] is None
     assert third["ingestion"]["records_inserted"] == 0
-    assert len(third["records"]) == 3
+    assert third["news_ingestion"]["records_inserted"] == 0
+    assert len(third["records"]) == 4
 
 
 async def test_evidence_filters(evidence_client: httpx.AsyncClient) -> None:

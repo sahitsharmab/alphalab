@@ -10,19 +10,28 @@ import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.connectors.sec_edgar import SecEdgarConnector
+from app.connectors.yahoo_news import YahooNewsConnector
 from app.models.market import Instrument
 from app.normalization import NormalizationError
+from app.normalization.rss import parse_rss
 from app.normalization.sec_edgar import parse_submissions, parse_ticker_map
 from app.repositories.evidence import EvidenceRepository
 from app.repositories.macro import RawPayloadRepository
 from app.repositories.market import InstrumentRepository
-from app.schemas.evidence import EntityType, EvidenceIngestionReport
+from app.schemas.evidence import (
+    EntityRef,
+    EntityType,
+    EvidenceCategory,
+    EvidenceIngestionReport,
+)
 
 logger = structlog.get_logger(__name__)
 
 #: Evidence freshness window: EDGAR filings are event-driven, so a few
 #: hours is plenty for a single-user platform without hammering SEC.
 DEFAULT_STALENESS = timedelta(hours=6)
+#: News feeds move faster than filings.
+NEWS_STALENESS = timedelta(hours=2)
 
 
 class UnknownSymbolError(Exception):
@@ -34,11 +43,15 @@ class EvidenceIngestionService:
         self,
         session: AsyncSession,
         connector: SecEdgarConnector,
+        news_connector: YahooNewsConnector | None = None,
         staleness: timedelta = DEFAULT_STALENESS,
+        news_staleness: timedelta = NEWS_STALENESS,
     ) -> None:
         self._session = session
         self._connector = connector
+        self._news_connector = news_connector
         self._staleness = staleness
+        self._news_staleness = news_staleness
         self._evidence = EvidenceRepository(session)
         self._raw_payloads = RawPayloadRepository(session)
         self._instruments = InstrumentRepository(session)
@@ -82,6 +95,51 @@ class EvidenceIngestionService:
         )
         return EvidenceIngestionReport(
             source_id="sec_edgar",
+            symbol=symbol,
+            records_parsed=len(records),
+            records_inserted=inserted,
+            retrieved_at=fetch.retrieved_at,
+        )
+
+    async def ensure_ticker_news(
+        self, symbol: str, force: bool = False
+    ) -> EvidenceIngestionReport | None:
+        """Ingest per-ticker news headlines unless already fresh."""
+        if self._news_connector is None:
+            return None
+        symbol = symbol.upper()
+        if not force:
+            newest = await self._evidence.latest_retrieved_at(
+                "yahoo_news", EntityType.INSTRUMENT, symbol
+            )
+            if newest is not None and newest >= datetime.now(UTC) - self._news_staleness:
+                return None
+
+        fetch = await self._news_connector.fetch_ticker_news(symbol)
+        raw_payload, _reused = await self._raw_payloads.store(
+            provider=fetch.provider,
+            dataset=f"{fetch.dataset}:{symbol}",
+            source_url=fetch.url,
+            content=fetch.content,
+            content_hash=fetch.content_hash,
+            retrieved_at=fetch.retrieved_at,
+        )
+        records = parse_rss(
+            fetch.content,
+            source_id="yahoo_news",
+            category=EvidenceCategory.MARKET_NEWS,
+            # "mentioned", not "subject": aggregated coverage about the
+            # ticker's world, not statements by the company.
+            entities=(
+                EntityRef(entity_type=EntityType.INSTRUMENT, entity_key=symbol, role="mentioned"),
+            ),
+        )
+        inserted = await self._evidence.upsert_records(
+            records, retrieved_at=fetch.retrieved_at, raw_payload_id=raw_payload.id
+        )
+        logger.info("ticker_news_ingested", symbol=symbol, parsed=len(records), inserted=inserted)
+        return EvidenceIngestionReport(
+            source_id="yahoo_news",
             symbol=symbol,
             records_parsed=len(records),
             records_inserted=inserted,
