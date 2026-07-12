@@ -67,12 +67,13 @@ Deliverable: the workspace gains a **Company Evidence** section (SEC filings, pr
 * [x] C7. Evidence Engine: deterministic Company Evidence section (filings summary, latest earnings filing, coverage with explicit trust framing); wired into the workspace with best-effort ingestion (source outages degrade, never break)
 * [x] C8. Frontend: evidence tables now render links to originals + trust badges (provenance tooltip)
 
-## Sprint C2 — Catalysts (Tier 3)
+## Sprint C2 — Catalysts (Tier 3) ✅ Shipped 2026-07-12 (Fed calendar scope)
 
-Deliverable: workspace gains Upcoming Catalysts.
+Deliverable shipped: workspace gains **Upcoming Catalysts** (FOMC decisions/minutes/press conferences, Beige Book, Fed data releases) from the Fed's official calendar JSON — verified, no key, trust 10.
 
-* [ ] C2-1. Macro calendar from OFFICIAL release schedules (BLS CPI/jobs schedule, FOMC meeting calendar, BEA GDP schedule) — pre-task: parse formats
-* [ ] C2-2. Earnings date: pre-task to pick a reliable free source (Nasdaq API flaky — verified; candidates: company 8-K/PR announcements, FMP free tier w/ key); ship only if reliable (source-risk gate, ADR-009)
+* [x] C2-1. Fed calendar connector (`/json/calendar.json`, BOM + comma-day-list quirks handled), `calendar_events` storage (migration 0005), Catalysts engine + workspace section
+* [ ] C2-1b. CPI/jobs/GDP release dates via FRED release-dates API — **needs a free FRED API key from the owner** (also unblocks rates data). BLS HTML schedule rejected: aggressive bot-blocking (403s observed 2026-07-12).
+* [x] C2-2. Earnings date: pre-task verdict — NO reliable free source (Yahoo quoteSummary needs crumb/cookie [401], Nasdaq API flaky). Gated out per ADR-009; the section states the gap honestly. Revisit candidates: company 8-K/PR announcements, FMP free tier w/ key.
 
 ## Sprint B — AI synthesis layer (after Evidence Foundation)
 

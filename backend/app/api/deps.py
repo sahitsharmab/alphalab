@@ -11,6 +11,7 @@ import httpx
 from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.connectors.federal_reserve import FederalReserveConnector
 from app.connectors.nowflation import NowflationConnector
 from app.connectors.sec_edgar import SecEdgarConnector
 from app.connectors.yahoo import YahooConnector
@@ -61,4 +62,12 @@ def get_yahoo_news_connector(request: Request) -> YahooNewsConnector:
     return YahooNewsConnector(
         client=get_http_client(request),
         base_url=settings.yahoo_news_base_url,
+    )
+
+
+def get_federal_reserve_connector(request: Request) -> FederalReserveConnector:
+    settings = request.app.state.settings
+    return FederalReserveConnector(
+        client=get_http_client(request),
+        base_url=settings.federal_reserve_base_url,
     )

@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     nowflation_base_url: str = "https://nowflation.com"
     yahoo_base_url: str = "https://query1.finance.yahoo.com"
     yahoo_news_base_url: str = "https://feeds.finance.yahoo.com"
+    federal_reserve_base_url: str = "https://www.federalreserve.gov"
     sec_data_base_url: str = "https://data.sec.gov"
     sec_www_base_url: str = "https://www.sec.gov"
     # SEC fair-access policy asks for contact info in the User-Agent —

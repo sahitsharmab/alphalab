@@ -4,21 +4,25 @@ Orchestration only: ensure data is present → run engines → assemble the
 view → persist the snapshot as a research artifact.
 """
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.engines.catalysts import build_catalysts_section
 from app.engines.evidence import build_company_evidence_section
 from app.engines.inflation import build_macro_section
 from app.engines.technical import build_historical_section, build_technical_section
 from app.models.research import WorkspaceSnapshot
 from app.normalization.nowflation import SERIES_HEADLINE_YOY
+from app.repositories.calendar import CalendarEventRepository
 from app.repositories.evidence import EvidenceRepository
 from app.repositories.macro import MacroObservationRepository
 from app.repositories.market import MarketBarRepository
+from app.schemas.calendar import CalendarEventOut
 from app.schemas.evidence import EntityType, EvidenceRecordOut
 from app.schemas.workspace import PricePoint, QuoteSummary, WorkspaceView
+from app.services.calendar_ingestion import CalendarIngestionService
 from app.services.evidence_ingestion import EvidenceIngestionService
 from app.services.market_ingestion import MarketIngestionService
 
@@ -35,15 +39,18 @@ class WorkspaceService:
         session: AsyncSession,
         market: MarketIngestionService,
         evidence: EvidenceIngestionService | None = None,
+        calendar: CalendarIngestionService | None = None,
         benchmark_symbol: str = "SPY",
     ) -> None:
         self._session = session
         self._market = market
         self._evidence_ingestion = evidence
+        self._calendar_ingestion = calendar
         self._benchmark_symbol = benchmark_symbol.upper()
         self._bars = MarketBarRepository(session)
         self._macro = MacroObservationRepository(session)
         self._evidence = EvidenceRepository(session)
+        self._calendar = CalendarEventRepository(session)
 
     async def build(self, symbol: str, force_refresh: bool = False) -> WorkspaceView:
         symbol = symbol.upper()
@@ -58,6 +65,8 @@ class WorkspaceService:
             raise WorkspaceError(f"no price history available for {symbol}")
         yoy = await self._macro.get_observations(SERIES_HEADLINE_YOY)
         evidence_records = await self._load_evidence(symbol, force_refresh)
+        today = datetime.now(UTC).date()
+        calendar_events = await self._load_calendar(today, force_refresh)
 
         sections = [
             build_technical_section(symbol, bars),
@@ -68,6 +77,7 @@ class WorkspaceService:
                 benchmark_bars=benchmark_bars or None,
             ),
             build_company_evidence_section(evidence_records),
+            build_catalysts_section(calendar_events, today),
             build_macro_section(yoy),
         ]
 
@@ -129,3 +139,12 @@ class WorkspaceService:
                         error=str(exc),
                     )
         return await self._evidence.list_for_entity(EntityType.INSTRUMENT, symbol, limit=30)
+
+    async def _load_calendar(self, today: date, force_refresh: bool) -> list[CalendarEventOut]:
+        """Ingest (best-effort) and load upcoming calendar events."""
+        if self._calendar_ingestion is not None:
+            try:
+                await self._calendar_ingestion.ensure_fed_calendar(force=force_refresh)
+            except Exception as exc:
+                logger.warning("calendar_ingestion_degraded", error=str(exc))
+        return await self._calendar.list_upcoming(today, limit=40)

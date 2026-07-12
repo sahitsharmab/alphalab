@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Upcoming Catalysts in the workspace: next FOMC rate decision (with press-conference note and days-away), FOMC minutes, Beige Book, and upcoming Federal Reserve data releases — sourced from the Fed's official calendar. Earnings dates are explicitly marked unavailable rather than guessed.
 - Company Evidence in the workspace: every ticker page now shows SEC filings (with deterministic categories) and recent ticker coverage, each statement expandable to evidence rows with links to the original documents and source trust badges (10/10 filings vs 7/10 aggregated commentary, clearly framed).
 - Evidence API: `GET /api/v1/evidence/{symbol}` returns trust-labeled, categorized, entity-linked evidence records — starting with SEC EDGAR filings (10-K/10-Q/8-K and other material forms, auto-fetched and deterministically categorized). Filter by category, minimum trust level, and date.
 - Investment Workspace: enter a ticker (search box on the dashboard) to open `/workspace/{symbol}` — a one-year price chart plus Technical Overview, Historical Context, and Macro Environment sections. Every statement is expandable to its evidence (metric, value, as-of date, source). Market history is fetched automatically from Yahoo Finance and stored bitemporally; every generated workspace is persisted as a research artifact.

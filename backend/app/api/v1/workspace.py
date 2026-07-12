@@ -7,17 +7,20 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import (
+    get_federal_reserve_connector,
     get_sec_edgar_connector,
     get_session,
     get_yahoo_connector,
     get_yahoo_news_connector,
 )
 from app.connectors.base import ConnectorError
+from app.connectors.federal_reserve import FederalReserveConnector
 from app.connectors.sec_edgar import SecEdgarConnector
 from app.connectors.yahoo import YahooConnector
 from app.connectors.yahoo_news import YahooNewsConnector
 from app.normalization import NormalizationError
 from app.schemas.workspace import WorkspaceView
+from app.services.calendar_ingestion import CalendarIngestionService
 from app.services.evidence_ingestion import EvidenceIngestionService
 from app.services.market_ingestion import MarketIngestionService
 from app.services.workspace import WorkspaceError, WorkspaceService
@@ -35,6 +38,7 @@ async def get_workspace(
     connector: Annotated[YahooConnector, Depends(get_yahoo_connector)],
     sec_connector: Annotated[SecEdgarConnector, Depends(get_sec_edgar_connector)],
     news_connector: Annotated[YahooNewsConnector, Depends(get_yahoo_news_connector)],
+    fed_connector: Annotated[FederalReserveConnector, Depends(get_federal_reserve_connector)],
     refresh: Annotated[bool, Query(description="Force re-fetch of market data")] = False,
 ) -> WorkspaceView:
     """Build (and persist) the Investment Workspace for one symbol."""
@@ -46,8 +50,13 @@ async def get_workspace(
         session, connector, staleness_days=settings.market_staleness_days
     )
     evidence = EvidenceIngestionService(session, sec_connector, news_connector)
+    calendar = CalendarIngestionService(session, fed_connector)
     service = WorkspaceService(
-        session, market, evidence=evidence, benchmark_symbol=settings.benchmark_symbol
+        session,
+        market,
+        evidence=evidence,
+        calendar=calendar,
+        benchmark_symbol=settings.benchmark_symbol,
     )
     try:
         return await service.build(symbol, force_refresh=refresh)

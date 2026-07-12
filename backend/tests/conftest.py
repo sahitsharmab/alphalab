@@ -118,7 +118,7 @@ async def integration_session(integration_db: Settings) -> AsyncIterator[AsyncSe
             text(
                 "TRUNCATE macro_observations, raw_payloads, macro_series, "
                 "market_bars, instruments, workspace_snapshots, "
-                "evidence_records, evidence_entities CASCADE"
+                "evidence_records, evidence_entities, calendar_events CASCADE"
             )
         )
         await connection.commit()

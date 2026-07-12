@@ -19,6 +19,7 @@ Everything below is implemented, tested, verified live, and green in CI:
 * **Sprint 0** — FastAPI backend, TimescaleDB, Alembic (4 migrations), Next.js frontend, Docker Compose, GitHub Actions CI.
 * **Macro slice** — Nowflation connector → bitemporal `macro_observations` → `GET /api/v1/macro/...` → dashboard with charts (`frontend/app/page.tsx`).
 * **Sprint A: Investment Workspace** — Yahoo connector → bitemporal `market_bars` → pure feature functions → Technical/Historical/Inflation engines → `GET /api/v1/workspace/{symbol}` → `/workspace/[symbol]` page. Every statement carries evidence ids; the `WorkspaceSection` validator rejects untraceable claims.
+* **Sprint C2 (complete): Upcoming Catalysts** — Fed calendar connector (`/json/calendar.json`, official, no key), `calendar_events` storage, Catalysts engine (next FOMC/minutes/Beige Book/stat releases; earnings dates honestly gated out — no reliable free source). CPI/jobs/GDP dates pending the owner's free FRED key (task C2-1b).
 * **Sprint C (complete): Evidence Engine** — source registry with trust levels (`backend/app/config/evidence_sources.py`), `evidence_records` + `evidence_entities` (graph-ready, ADR-013), SEC EDGAR connector, Yahoo per-ticker news RSS connector (trust 7, defusedxml parsing), `GET /api/v1/evidence/{symbol}`, and the workspace **Company Evidence** section (filings + coverage, trust badges, links to originals, best-effort ingestion that degrades on source outages).
 * 58 backend tests (unit + integration against real TimescaleDB), ruff + mypy `--strict` clean.
 
@@ -26,10 +27,10 @@ Everything below is implemented, tested, verified live, and green in CI:
 
 ## What Is NOT Built Yet (next work, in order)
 
-1. **Sprint C2**: catalysts from OFFICIAL release schedules (BLS/FOMC/BEA); earnings-date source needs a pre-task (Nasdaq API is flaky — verified). Note: per-company press-release wires were investigated and are NOT free-viable (Session 007); EDGAR 8-K is the company-statements channel.
-2. **Sprint B**: LLM Gateway (ADR-006) + workspace synthesis. **Blocked on the owner choosing the LLM provider/model and supplying an API key** (task B0).
+1. **Sprint B**: LLM Gateway (ADR-006) + workspace synthesis. **Blocked on the owner choosing the LLM provider/model and supplying an API key** (task B0).
+2. **C2-1b**: CPI/jobs/GDP release dates via FRED release-dates API — **needs the owner's free FRED key** (also unblocks rates data / remaining Phase 1 macro connectors). BLS HTML was rejected (bot-blocking); per-company press-release wires are NOT free-viable (Session 007); earnings dates have no reliable free source (Session 008).
 3. Scheduler for automatic ingestion (currently manual/auto-on-request).
-4. Deferred: CNBC/MarketWatch general feeds (need a market-context section), full filing text retrieval, FRED/Treasury/BLS macro connectors.
+4. Deferred: CNBC/MarketWatch general feeds (need a market-context section), full filing text retrieval, Treasury connector.
 
 ## Non-Negotiable Invariants
 

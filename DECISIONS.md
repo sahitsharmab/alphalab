@@ -939,6 +939,34 @@ Sprint C2 (catalysts from official release schedules; earnings-date pre-task) or
 
 ---
 
+## Session 008
+
+### Date
+
+2026-07-12
+
+### Goal
+
+Sprint C2: Upcoming Catalysts in the workspace.
+
+### Completed
+
+* Pre-task verdicts: the Fed's `/json/calendar.json` is a first-class official source (no key; FOMC/Beige Book/stat releases; BOM + comma-day-list quirks). BLS HTML schedules 403 non-browser clients unpredictably — rejected; CPI/jobs/GDP dates will come from FRED's release-dates API once the owner registers a free key. Earnings dates: no reliable free source (Yahoo quoteSummary 401s without crumb; Nasdaq flaky) — gated out per ADR-009, stated honestly in the UI.
+* FederalReserveConnector + normalization (event classification: FOMC meeting/minutes/press conference, Beige Book, stat releases; speeches/testimony excluded from catalysts), `calendar_events` table (migration 0005), repository, daily-staleness ingestion service.
+* Catalysts Engine: next FOMC decision with days-away and same-day-press-conference note, minutes/Beige Book, upcoming Fed data releases, and explicit gap statements.
+* Workspace gains the Upcoming Catalysts section (best-effort ingestion, degrades on outage).
+* 62 backend tests; verified live (FOMC 2026-07-29 in 17 days; Beige Book in 3 days) and visually.
+
+### Technical Debt
+
+* Catalysts are macro-only until FRED (CPI/jobs/GDP) and an earnings-date source land.
+
+### Next Recommended Task
+
+Sprint B (LLM Gateway + synthesis — needs owner's provider decision + key) or C2-1b (FRED release dates — needs owner's free FRED key).
+
+---
+
 # Open Questions
 
 Questions that have not yet been answered.

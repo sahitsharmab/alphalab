@@ -12,11 +12,13 @@ from fastapi import FastAPI
 from sqlalchemy import func, select
 
 from app.api.deps import (
+    get_federal_reserve_connector,
     get_sec_edgar_connector,
     get_yahoo_connector,
     get_yahoo_news_connector,
 )
 from app.config.settings import Settings
+from app.connectors.federal_reserve import FederalReserveConnector
 from app.connectors.sec_edgar import SecEdgarConnector
 from app.connectors.yahoo import YahooConnector
 from app.connectors.yahoo_news import YahooNewsConnector
@@ -55,6 +57,16 @@ def news_mock() -> httpx.MockTransport:
     return httpx.MockTransport(lambda request: httpx.Response(200, text=NEWS_RSS))
 
 
+FED_CALENDAR = (
+    '{"events": [{"title": "FOMC Meeting", "type": "FOMC", "month": "2099-07", '
+    '"days": "29", "time": "2:00 p.m."}]}'
+)
+
+
+def fed_mock() -> httpx.MockTransport:
+    return httpx.MockTransport(lambda request: httpx.Response(200, text=FED_CALENDAR))
+
+
 def yahoo_mock() -> httpx.MockTransport:
     def handler(request: httpx.Request) -> httpx.Response:
         path = request.url.path
@@ -90,6 +102,10 @@ async def workspace_client(
         client=httpx.AsyncClient(transport=news_mock()),
         base_url="https://news.test",
     )
+    app.dependency_overrides[get_federal_reserve_connector] = lambda: FederalReserveConnector(
+        client=httpx.AsyncClient(transport=fed_mock()),
+        base_url="https://fed.test",
+    )
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         client.app = app  # type: ignore[attr-defined]
@@ -109,7 +125,7 @@ async def test_workspace_end_to_end(workspace_client: httpx.AsyncClient) -> None
     assert len(body["price_history"]) > 200
 
     sections = {s["id"]: s for s in body["sections"]}
-    assert set(sections) == {"technical", "historical", "evidence", "macro"}
+    assert set(sections) == {"technical", "historical", "evidence", "catalysts", "macro"}
 
     # ADR-010 traceability: every cited evidence id resolves in its section.
     for section in sections.values():
@@ -126,6 +142,11 @@ async def test_workspace_end_to_end(workspace_client: httpx.AsyncClient) -> None
     assert any("SEC filing" in s["text"] for s in evidence_section["statements"])
     assert any("aggregated commentary" in s["text"] for s in evidence_section["statements"])
     assert all(e["trust_level"] is not None and e["url"] for e in evidence_section["evidence"])
+
+    # Catalysts: next FOMC decision from the (mock) Fed calendar; honest gaps.
+    catalyst_texts = " ".join(s["text"] for s in sections["catalysts"]["statements"])
+    assert "Next FOMC rate decision: 2099-07-29" in catalyst_texts
+    assert "Earnings date: not shown" in catalyst_texts
 
     # Macro section degrades gracefully with no inflation data ingested.
     macro_texts = " ".join(s["text"] for s in sections["macro"]["statements"]).lower()
