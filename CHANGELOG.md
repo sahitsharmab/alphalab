@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Manual AI research packet: copy a versioned, source-linked workspace prompt for analysis in ChatGPT or Claude without configuring or paying for an LLM API.
+
 - Automatic daily ingestion for Nowflation and the Federal Reserve calendar, with an immediate refresh when the backend starts and configurable scheduling intervals.
 
 - Upcoming Catalysts in the workspace: next FOMC rate decision (with press-conference note and days-away), FOMC minutes, Beige Book, and upcoming Federal Reserve data releases — sourced from the Fed's official calendar. Earnings dates are explicitly marked unavailable rather than guessed.

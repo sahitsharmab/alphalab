@@ -170,6 +170,25 @@ async def test_workspace_snapshot_persisted(workspace_client: httpx.AsyncClient)
     assert count == 2  # research is permanent: every view is kept
 
 
+async def test_manual_analysis_exports_latest_snapshot(workspace_client: httpx.AsyncClient) -> None:
+    built = await workspace_client.get("/api/v1/workspace/MU")
+    assert built.status_code == 200
+
+    response = await workspace_client.get("/api/v1/workspace/MU/manual-analysis")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["prompt_version"] == "manual-workspace-v1"
+    assert '"symbol": "MU"' in body["content"]
+    assert "https://news.test/a" in body["content"]
+
+
+async def test_manual_analysis_requires_existing_snapshot(
+    workspace_client: httpx.AsyncClient,
+) -> None:
+    response = await workspace_client.get("/api/v1/workspace/NOPE/manual-analysis")
+    assert response.status_code == 404
+
+
 async def test_unknown_symbol_is_404(workspace_client: httpx.AsyncClient) -> None:
     response = await workspace_client.get("/api/v1/workspace/NOPE")
     assert response.status_code == 404

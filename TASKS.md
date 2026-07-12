@@ -79,6 +79,7 @@ Deliverable shipped: workspace gains **Upcoming Catalysts** (FOMC decisions/minu
 
 Deliverable: workspace gains Executive Summary, Bull Case, Bear Case, Risk Assessment, Confidence (labeled as model self-assessment), and "Questions to ask before investing."
 
+* [x] B-manual. Manual AI research packet (ADR-014): one-click copy of a versioned analysis prompt containing structured workspace statements, namespaced evidence citations, trust levels, and source URLs; no API key or LLM call (2026-07-12)
 * [ ] B0. Decide default LLM provider/model (open question → ADR); owner supplies API key
 * [ ] B1. LLM Gateway (ADR-006): provider-agnostic, logged, cached, versioned prompts, structured outputs only
 * [ ] B2. Workspace synthesizer: LLM reasons ONLY over structured evidence (Sprint A numbers + Sprint C records); every claim cites evidence with source + trust level

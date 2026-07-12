@@ -530,6 +530,16 @@ All analyst LLM calls flow through a single provider-agnostic **LLM Gateway**:
 
 No analyst may call an LLM SDK directly.
 
+## Manual AI Research Packet (ADR-014)
+
+Until the LLM Gateway has a funded provider, the workspace can export its
+latest persisted snapshot as a deterministic, versioned research prompt for a
+user-operated ChatGPT or Claude session. The packet contains structured
+statements and namespaced evidence references, source URLs, trust levels, and
+explicit injection-defense instructions. It performs no model call and creates
+no AI-generated AlphaLab output. This is a manual transport over the existing
+research artifact, not an exception to the future gateway requirement.
+
 ---
 
 # Strategy Framework

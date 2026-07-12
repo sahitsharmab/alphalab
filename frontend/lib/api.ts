@@ -104,6 +104,19 @@ export function getWorkspace(
   );
 }
 
+export interface ManualAnalysisPacket {
+  prompt_version: string;
+  content: string;
+}
+
+export function getManualAnalysisPacket(
+  symbol: string,
+): Promise<ManualAnalysisPacket> {
+  return request<ManualAnalysisPacket>(
+    `/api/v1/workspace/${encodeURIComponent(symbol)}/manual-analysis`,
+  );
+}
+
 export interface Health {
   status: "ok" | "degraded";
   environment: string;

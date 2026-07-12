@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.analysts.manual_workspace import build_manual_analysis_packet
 from app.api.deps import (
     get_federal_reserve_connector,
     get_sec_edgar_connector,
@@ -19,6 +20,8 @@ from app.connectors.sec_edgar import SecEdgarConnector
 from app.connectors.yahoo import YahooConnector
 from app.connectors.yahoo_news import YahooNewsConnector
 from app.normalization import NormalizationError
+from app.repositories.research import WorkspaceSnapshotRepository
+from app.schemas.manual_analysis import ManualAnalysisPacket
 from app.schemas.workspace import WorkspaceView
 from app.services.calendar_ingestion import CalendarIngestionService
 from app.services.evidence_ingestion import EvidenceIngestionService
@@ -28,6 +31,23 @@ from app.services.workspace import WorkspaceError, WorkspaceService
 router = APIRouter(prefix="/workspace")
 
 _SYMBOL_PATTERN = re.compile(r"^[A-Za-z0-9.\-\^]{1,10}$")
+
+
+@router.get("/{symbol}/manual-analysis")
+async def get_manual_analysis_packet(
+    symbol: str,
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> ManualAnalysisPacket:
+    """Export the latest workspace as a copyable, versioned AI research prompt."""
+    if not _SYMBOL_PATTERN.match(symbol):
+        raise HTTPException(status_code=422, detail=f"invalid symbol: {symbol!r}")
+    view = await WorkspaceSnapshotRepository(session).latest(symbol)
+    if view is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"build the {symbol.upper()} workspace before exporting it",
+        )
+    return build_manual_analysis_packet(view)
 
 
 @router.get("/{symbol}")

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import EvidenceSectionCard from "@/components/EvidenceSection";
 import LineChart, { ChartPoint } from "@/components/LineChart";
 import TickerSearch from "@/components/TickerSearch";
-import { getWorkspace, WorkspaceView } from "@/lib/api";
+import { getManualAnalysisPacket, getWorkspace, WorkspaceView } from "@/lib/api";
 import { theme } from "@/lib/theme";
 
 export default function WorkspacePage() {
@@ -16,6 +16,9 @@ export default function WorkspacePage() {
   const [view, setView] = useState<WorkspaceView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "copied" | "error">(
+    "idle",
+  );
 
   const load = useCallback(
     async (refresh: boolean) => {
@@ -46,6 +49,18 @@ export default function WorkspacePage() {
   );
 
   const change = view?.quote.change_1d ?? null;
+
+  const copyAnalysisPacket = useCallback(async () => {
+    setCopyStatus("copying");
+    try {
+      const packet = await getManualAnalysisPacket(symbol);
+      await navigator.clipboard.writeText(packet.content);
+      setCopyStatus("copied");
+      window.setTimeout(() => setCopyStatus("idle"), 2500);
+    } catch {
+      setCopyStatus("error");
+    }
+  }, [symbol]);
 
   return (
     <main style={{ maxWidth: 960, margin: "0 auto", padding: "2.5rem 1.5rem" }}>
@@ -94,10 +109,32 @@ export default function WorkspacePage() {
             {view.exchange} · as of {view.quote.price_date}
           </span>
           <button
+            onClick={() => void copyAnalysisPacket()}
+            disabled={copyStatus === "copying"}
+            title="Copy the structured workspace and source links for analysis in ChatGPT or Claude"
+            style={{
+              marginLeft: "auto",
+              background: theme.surface,
+              color: copyStatus === "error" ? theme.statusCritical : theme.inkSecondary,
+              border: `1px solid ${theme.border}`,
+              borderRadius: 8,
+              padding: "5px 11px",
+              fontSize: 12,
+              cursor: copyStatus === "copying" ? "wait" : "pointer",
+            }}
+          >
+            {copyStatus === "copying"
+              ? "Preparingâ€¦"
+              : copyStatus === "copied"
+                ? "Copied research packet"
+                : copyStatus === "error"
+                  ? "Copy failed â€” retry"
+                  : "Copy for ChatGPT / Claude"}
+          </button>
+          <button
             onClick={() => void load(true)}
             disabled={loading}
             style={{
-              marginLeft: "auto",
               background: theme.surface,
               color: theme.inkSecondary,
               border: `1px solid ${theme.border}`,

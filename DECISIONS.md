@@ -647,6 +647,40 @@ Sprint C's evidence storage ships with `evidence_entities` from day one. Queries
 
 ---
 
+## ADR-014
+
+### Title
+
+Manual AI Research Packet Before Funded LLM Integration
+
+### Date
+
+2026-07-12
+
+### Status
+
+Accepted
+
+### Context
+
+The deterministic workspace is useful today, but automated Sprint B synthesis requires paid LLM API credits. The owner already has access to consumer ChatGPT/Claude products and wants to analyze AlphaLab evidence there before funding an API integration.
+
+### Decision
+
+AlphaLab exports the latest persisted `WorkspaceView` as a deterministic, versioned manual research packet. The packet contains analysis instructions followed by structured workspace metadata, statements, namespaced evidence references, source trust levels, dates, and original URLs. It excludes the redundant raw daily price array while retaining the quote and all derived evidence.
+
+The prompt treats all evidence content as untrusted data, requires evidence-id citations, prohibits binary buy/sell recommendations, and labels confidence as model self-assessment. AlphaLab makes no model call and does not ingest the manually generated response.
+
+### Reasoning
+
+This produces immediate value at zero API cost while preserving the core contracts of ADR-006 and ADR-010. Rendering from the persisted snapshot keeps the export reproducible and avoids refetching providers. Namespacing citations as `section:evidence_id` prevents collisions between section-local ids.
+
+### Consequences
+
+The manual packet is a bridge, not a replacement for the LLM Gateway. Any future in-product automated synthesis still must use ADR-006 structured outputs, logging, caching, prompt versioning, and provider isolation. Manually pasted responses are outside AlphaLab's validation and persistence boundary.
+
+---
+
 # Session Journal
 
 ---
@@ -992,6 +1026,39 @@ An in-process scheduler is sufficient for the current single-process, single-use
 ### Next Recommended Task
 
 Sprint B once the owner provides an actual provider/model selection and `ALPHALAB_LLM_API_KEY`; otherwise C2-1b once `ALPHALAB_FRED_API_KEY` is available.
+
+---
+
+## Session 010
+
+### Date
+
+2026-07-12
+
+### Goal
+
+Deliver useful AI-assisted workspace analysis without paid API credits.
+
+### Completed
+
+* Accepted ADR-014 and added a deterministic `manual-workspace-v1` prompt stored as versioned configuration.
+* Added `GET /api/v1/workspace/{symbol}/manual-analysis`, rendering the latest persisted snapshot without provider refetches or LLM calls.
+* Namespaced evidence citations by section, included dates/trust/source URLs, and added explicit injection-defense and calibration instructions.
+* Added a one-click “Copy for ChatGPT / Claude” workspace control with user-visible clipboard status.
+* Added unit/contract/integration tests for versioning, citation resolution, sources, snapshot behavior, and inert prompt-like evidence.
+* Verified live with NBIS: 34 evidence references and 16 source URLs in a 19.8k-character packet.
+
+### Challenges
+
+The configured in-app browser surface was unavailable, so container/API behavior and the production frontend build were verified, but visual screenshot inspection could not be completed in this session.
+
+### Technical Debt
+
+Manual LLM responses are intentionally not imported, schema-validated, or persisted. That boundary remains until the funded ADR-006 gateway and synthesizer are built.
+
+### Next Recommended Task
+
+Use the manual packet on real investment decisions and improve missing deterministic evidence based on observed gaps; keep automated Sprint B deferred until API spend is justified.
 
 ---
 
