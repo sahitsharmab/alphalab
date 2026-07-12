@@ -19,9 +19,9 @@ After every completed task:
 
 # Current Goal
 
-**AlphaLab v0.1 — Investment Decision Support System** (ADR-009, 2026-07-12).
+**AlphaLab v0.1 — Single-Stock Momentum Decision Workspace** (ADR-015, 2026-07-12).
 
-Enter a ticker → receive a complete, evidence-backed investment briefing.
+Enter a ticker → evaluate the Weekly Thesis separately from today's Intraday Execution Context.
 
 Research comes before automation. Every sprint must deliver a usable feature.
 
@@ -32,6 +32,30 @@ The near-term filter for every task: *"Will this help me make a better investmen
 # MVP Roadmap — Investment Briefing (v0.1)
 
 The original phases below remain the long-term map; the MVP re-sequences their contents into briefing-driven sprints. Architecture is unchanged — each sprint is a vertical slice through the existing layers.
+
+## Momentum Roadmap — Approved 2026-07-12 (ADR-015)
+
+### Sprint M1 — Intraday Market Foundation
+
+* [ ] M1a. Verify free intraday sources for NBIS/SPY/QQQ across premarket, regular, and after-hours; scorecard started 2026-07-12 but **blocked** on weekday live-session observation and free Alpaca credentials (`M1A_PROVIDER_SCORECARD.md`)
+* [ ] M1b. Canonical bitemporal one-minute storage with meaningful-change revisions and immutable raw references
+* [ ] M1c. Deterministic five-minute aggregation; exchange-calendar session segmentation; previous-day, premarket, and configurable opening-range levels; feed-scoped VWAP
+* [ ] M1d. Independent intraday bars/session APIs with freshness, delay, completed-bar, missing-bar, and coverage metadata
+* [ ] M1e. One-session chart with extended-hours segmentation and persistent data-quality warnings
+
+M1b–M1e may begin only after M1a selects a provider. No provider is selected as of 2026-07-12.
+
+### Sprint M2 — Momentum and Relative Context
+
+* [ ] M2. Deterministic session structure, momentum change, time-adjusted relative volume, SPY/QQQ/sector/peer context, and change since prior snapshot
+
+### Sprint M3 — Risk Planner
+
+* [ ] M3. User entry/invalidation/target/risk inputs; position sizing, risk/reward, volatility context, and catalyst/gap warnings
+
+### Sprint M4 — Integrated Momentum Decision Workspace
+
+* [ ] M4. Compose Weekly Thesis, Intraday Execution Context, evidence, catalysts, relative context, risk plan, bull/bear evidence, what changed, and missing information
 
 ## Sprint A — Deterministic workspace core ✅ Complete (2026-07-12)
 

@@ -681,6 +681,45 @@ The manual packet is a bridge, not a replacement for the LLM Gateway. Any future
 
 ---
 
+## ADR-015
+
+### Title
+
+Single-Stock Momentum Workspace with Separate Weekly and Intraday Contexts
+
+### Date
+
+2026-07-12
+
+### Status
+
+Accepted
+
+### Context
+
+The existing Investment Workspace provides sound daily technical, historical, macro, evidence, and catalyst context. The owner's immediate workflow is discretionary momentum trading over approximately one to five trading days, where a valid weekly thesis and a valid entry today are distinct questions.
+
+### Decision
+
+AlphaLab v0.1 becomes a single-stock momentum decision workspace while preserving the long-term Financial Intelligence Platform and Evidence Engine architecture.
+
+The product explicitly separates:
+
+1. **Weekly Thesis** — daily structure, company/sector evidence, catalysts, macro, relative performance, and volatility.
+2. **Intraday Execution Context** — session candles, VWAP, previous-day/premarket/opening-range levels, volume participation, freshness, and explicit invalidation conditions.
+
+Intraday data must disclose provider, feed, coverage scope, timestamps, delay, freshness, completeness, and limitations. Single-venue, delayed, partial, proxy, or unofficial data is never labelled consolidated real-time truth. Providers are not blended into a synthetic session. The dashboard never emits binary buy/sell instructions.
+
+### Reasoning
+
+The split prevents a strong longer-horizon thesis from being mistaken for a good immediate entry. It also allows intraday source failures to degrade independently without breaking the existing evidence workspace. The current layers and dependency direction remain valid; implementation is re-prioritized into M1–M4 vertical slices.
+
+### Consequences
+
+M1 begins with an empirical provider gate. Canonical one-minute bars and derived five-minute bars may be built only after a free provider passes. Risk planning precedes advanced options/order-flow work. Sprint B automated synthesis, positioning, and portfolio work move behind the momentum core without being deleted.
+
+---
+
 # Session Journal
 
 ---
@@ -1059,6 +1098,35 @@ Manual LLM responses are intentionally not imported, schema-validated, or persis
 ### Next Recommended Task
 
 Use the manual packet on real investment decisions and improve missing deterministic evidence based on observed gaps; keep automated Sprint B deferred until API spend is justified.
+
+---
+
+## Session 011
+
+### Date
+
+2026-07-12
+
+### Goal
+
+Approve the momentum-workspace product refinement and empirically verify a free intraday provider before starting M1b.
+
+### Completed
+
+* Accepted ADR-015: Weekly Thesis and Intraday Execution Context are separate products within the existing workspace architecture.
+* Added the M1–M4 momentum roadmap without removing completed or deferred work.
+* Reviewed official Alpaca, Massive, and Alpha Vantage documentation and recorded free-tier restrictions.
+* Probed Yahoo 1m and 5m intraday responses for NBIS, SPY, and QQQ; repeated responses were byte-stable, all recent regular sessions contained 390 minute bars, and derived/provider-native regular 5m bars reconciled exactly.
+* Compared 2026-07-10 Yahoo regular closes and volumes against an independent market reference.
+* Documented the mandatory provider scorecard in `M1A_PROVIDER_SCORECARD.md`.
+
+### Blocker
+
+M1a cannot select a provider on Sunday. Live observation delay, current/incomplete-bar behavior, and premarket/after-hours delivery cannot be measured. Alpaca and Massive credentials are absent. Yahoo extended-hours bars had zero volume and non-minute-aligned terminal records; its unsupported contract and licensing risk also remain unresolved. Therefore no provider passes every acceptance criterion and M1b was not started.
+
+### Next Recommended Task
+
+Create a free Alpaca Basic account, configure its key and secret locally, and resume M1a during a weekday premarket through after-hours session. Compare IEX coverage with Yahoo/reference prices without blending feeds.
 
 ---
 

@@ -112,6 +112,34 @@ Yes → it belongs in the MVP. No → it stays on the longer-term roadmap.
 
 Briefings are research artifacts: persisted, versioned, and evidence-linked, so the platform accumulates decision history over time (the future memory of theses, targets, and trades builds on this).
 
+## v0.1 Product Refinement: Single-Stock Momentum Decisions
+
+AlphaLab v0.1 is specifically a **single-stock momentum decision workspace**
+for discretionary trades held approximately one to five trading days, with
+intraday entry-timing context. The user still selects the stock; AlphaLab does
+not discover trades, predict exact prices, or execute orders.
+
+The workspace separates two questions:
+
+* **Weekly Thesis:** is the stock worth actively monitoring or trading during
+  the coming week? Existing daily technical, historical, macro, company
+  evidence, and catalyst sections are foundational inputs.
+* **Intraday Execution Context:** does today's session confirm or weaken that
+  thesis, and is the current price near an explicitly defined and survivable
+  invalidation level?
+
+A strong weekly thesis never implies that today's entry is attractive. Every
+intraday value must disclose its provider, feed, coverage scope, observation
+time, retrieval time, delay/freshness, and known limitations. Single-venue,
+delayed, partial, or unofficial data must never be presented as consolidated
+real-time market truth.
+
+The guiding v0.1 question is:
+
+> Given a stock I have already selected, what has changed, does the current
+> session confirm or weaken the thesis, and what conditions should I require
+> before risking capital?
+
 ---
 
 # What We Are NOT Building

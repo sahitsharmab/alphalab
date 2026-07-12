@@ -7,12 +7,12 @@ the project documents in this order:
 1. AGENTS.md — your role, rules, and workflow
 2. PROJECT.md — vision and philosophy (note "The Evidence Engine" and the v0.1 MVP section)
 3. ARCHITECTURE.md — layers and dependency rules
-4. DECISIONS.md — ADR-001..013 and the session journal (read the ADRs; skim the journal)
+4. DECISIONS.md — ADR-001..015 and the session journal (read the ADRs; skim the journal)
 5. TASKS.md — the backlog; the "MVP Roadmap" section is the current plan
 
 ---
 
-## Current State (2026-07-12, automatic ingestion shipped)
+## Current State (2026-07-12, momentum roadmap approved; M1a blocked)
 
 Everything below is implemented, tested, verified live, and green in CI:
 
@@ -23,16 +23,17 @@ Everything below is implemented, tested, verified live, and green in CI:
 * **Sprint C (complete): Evidence Engine** — source registry with trust levels (`backend/app/config/evidence_sources.py`), `evidence_records` + `evidence_entities` (graph-ready, ADR-013), SEC EDGAR connector, Yahoo per-ticker news RSS connector (trust 7, defusedxml parsing), `GET /api/v1/evidence/{symbol}`, and the workspace **Company Evidence** section (filings + coverage, trust badges, links to originals, best-effort ingestion that degrades on source outages).
 * **Automatic ingestion scheduler** â€” the backend process refreshes Nowflation and the Fed calendar immediately at startup and every 24 hours (configurable); jobs reuse the existing ingestion services, isolate failures, and stop cleanly.
 * **Manual AI research packet (ADR-014)** — every built workspace can be copied as a versioned prompt for ChatGPT/Claude with structured statements, namespaced citations, trust levels, and source URLs. No API key or LLM call.
+* **Momentum product refinement (ADR-015)** — Weekly Thesis and Intraday Execution Context are separate. M1a empirical provider verification is documented in `M1A_PROVIDER_SCORECARD.md`; no intraday provider has passed yet, so M1b was not started.
 * 69 backend tests (unit + integration against real TimescaleDB), ruff + mypy `--strict` clean.
 
 **Repo:** https://github.com/sahitsharmab/alphalab — solo dev, direct commits to `main`, CI is the gate (no PRs). Commit messages must NEVER contain AI attribution lines (AGENTS.md rule).
 
 ## What Is NOT Built Yet (next work, in order)
 
-1. **Sprint B automated synthesis**: LLM Gateway (ADR-006) + in-product workspace synthesis. Deliberately deferred while the manual packet is used; still needs an owner-selected provider/model and API key.
-2. **C2-1b**: CPI/jobs/GDP release dates via FRED release-dates API — **needs the owner's free FRED key** (also unblocks rates data / remaining Phase 1 macro connectors). BLS HTML was rejected (bot-blocking); per-company press-release wires are NOT free-viable (Session 007); earnings dates have no reliable free source (Session 008).
-3. Ticker-scoped scheduled ingestion awaits a watchlist/universe contract; market/evidence remain auto-on-request.
-4. Deferred: CNBC/MarketWatch general feeds (need a market-context section), full filing text retrieval, Treasury connector.
+1. **M1a provider verification:** resume on a weekday with a free Alpaca Basic key/secret. Observe NBIS/SPY/QQQ during premarket, regular hours, and after-hours; measure delay and IEX coverage. Do not start M1b until a provider passes.
+2. **Sprint B automated synthesis:** deliberately deferred while the manual packet is used.
+3. **C2-1b:** needs the owner's free FRED key.
+4. Deferred: ticker-scoped scheduling, full filing text, Treasury, and expanded market-context feeds.
 
 ## Non-Negotiable Invariants
 

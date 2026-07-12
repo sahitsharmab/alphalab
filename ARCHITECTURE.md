@@ -663,6 +663,15 @@ Expose schemas.
 
 Never expose database models.
 
+## Momentum Workspace Boundary (ADR-015)
+
+The v0.1 workspace has two independent data products:
+
+* **Weekly Thesis** consumes the existing daily market, macro, evidence, and catalyst layers.
+* **Intraday Execution Context** will consume a separately verified intraday feed through its own connector, normalization, storage, feature, and API path. A failure in this path must not break the Weekly Thesis workspace.
+
+Intraday source/feed identity, coverage scope, observation time, retrieval time, estimated delay, freshness, completeness, missing-bar count, and known limitations are first-class output fields. Bars from different providers must never be silently blended into one session. If M1a selects a provider, AlphaLab will store canonical one-minute bars bitemporally and derive five-minute bars through a pure versioned function.
+
 ---
 
 # Database Organization
