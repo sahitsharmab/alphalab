@@ -12,6 +12,7 @@ from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.connectors.nowflation import NowflationConnector
+from app.connectors.sec_edgar import SecEdgarConnector
 from app.connectors.yahoo import YahooConnector
 
 
@@ -41,4 +42,14 @@ def get_yahoo_connector(request: Request) -> YahooConnector:
     return YahooConnector(
         client=get_http_client(request),
         base_url=settings.yahoo_base_url,
+    )
+
+
+def get_sec_edgar_connector(request: Request) -> SecEdgarConnector:
+    settings = request.app.state.settings
+    return SecEdgarConnector(
+        client=get_http_client(request),
+        data_base_url=settings.sec_data_base_url,
+        www_base_url=settings.sec_www_base_url,
+        user_agent=settings.sec_user_agent,
     )

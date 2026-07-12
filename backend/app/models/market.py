@@ -28,6 +28,8 @@ class Instrument(Base):
     name: Mapped[str] = mapped_column(String(256), nullable=False)
     currency: Mapped[str] = mapped_column(String(8), nullable=False, default="")
     exchange: Mapped[str] = mapped_column(String(64), nullable=False, default="")
+    # SEC Central Index Key, zero-padded to 10 digits (set by the EDGAR connector).
+    cik: Mapped[str | None] = mapped_column(String(10), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )

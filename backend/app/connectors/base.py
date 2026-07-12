@@ -88,13 +88,15 @@ class BaseConnector(ABC):
     async def health(self) -> ConnectorHealth:
         """Probe the external provider."""
 
-    async def _get_text(self, url: str, dataset: str) -> FetchResult:
+    async def _get_text(
+        self, url: str, dataset: str, headers: dict[str, str] | None = None
+    ) -> FetchResult:
         """GET ``url`` with retries and wrap the body as a ``FetchResult``."""
         provider = self.metadata().provider
         last_error = ""
         for attempt in range(1, self._max_attempts + 1):
             try:
-                response = await self._client.get(url)
+                response = await self._client.get(url, headers=headers)
             except httpx.TransportError as exc:
                 last_error = f"transport error: {exc}"
             else:

@@ -37,6 +37,8 @@ services:
       ALPHALAB_DB_USER: ${ALPHALAB_DB_USER:-alphalab}
       ALPHALAB_DB_PASSWORD: ${ALPHALAB_DB_PASSWORD:-alphalab}
       ALPHALAB_DB_NAME: ${ALPHALAB_DB_NAME:-alphalab}
+      # SEC requires contact info in the User-Agent; set it in .env.
+      ALPHALAB_SEC_USER_AGENT: ${ALPHALAB_SEC_USER_AGENT:-AlphaLab/0.1 (personal research)}
     ports:
       - "8000:8000"
     depends_on:

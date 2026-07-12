@@ -22,6 +22,12 @@ Automation second.
 
 Execution last.
 
+## The Evidence Engine
+
+At its deepest level, AlphaLab is an **Evidence Engine** (ADR-013).
+
+Every connector contributes evidence. Evidence is normalized, trust-labeled, entity-linked, and permanent. Everything else — the dashboard, the Investment Workspace, the AI analysts, the research notebook, the future portfolio manager — is a different way of querying and interacting with that evidence.
+
 ## Teach How to Think
 
 AlphaLab should teach the user **how to think**, not **what to think**.

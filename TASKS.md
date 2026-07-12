@@ -56,9 +56,11 @@ Follow-ups discovered:
 
 Deliverable: the workspace gains a **Company Evidence** section (SEC filings, press releases, quality headlines) — every item carrying source, category, and trust level. Evidence, not news.
 
-* [ ] C1. Source registry: configurable trust levels + source types (ADR-011)
-* [ ] C2. EvidenceRecord model + storage (bitemporal: published_at/retrieved_at; originals in raw_payloads; content-hash dedup) + repository
-* [ ] C3. SEC EDGAR connector (Tier 1, trust 10): ticker→CIK via company_tickers.json, submissions JSON + per-company Atom feeds; deterministic category mapping from filing type/8-K items (2.02→Earnings, 1.01→Regulatory/Agreement, …); UA header + ≤10 req/s (SEC policy)
+* [x] C1. Source registry: configurable trust levels + source types (ADR-011) — `app/config/evidence_sources.py`
+* [x] C2. EvidenceRecord model + storage + `evidence_entities` graph links (ADR-013) + repository (entity queries, source-scoped dedup)
+* [x] C3. SEC EDGAR connector (Tier 1, trust 10): ticker→CIK via company_tickers.json, submissions JSON, deterministic 8-K item→category mapping, contact User-Agent (SEC 403s without one), `GET /api/v1/evidence/{symbol}` with category/trust/since filters — verified live (40 MU filings)
+* [ ] C3-followup. Full filing text retrieval (records currently carry title/metadata/URL, not document text)
+* [ ] C3-followup. Per-company EDGAR Atom feed polling for incremental updates (submissions JSON refetch is fine at current scale)
 * [ ] C4. Sector mapping via SEC SIC codes (official, free) on the instruments catalog
 * [ ] C5. Press-release wire connector (Tier 1, trust 10 as company statements): PRNewswire RSS verified; GlobeNewswire/BusinessWire pre-task to find stable per-company feeds
 * [ ] C6. Tier 2 RSS connectors (trust 8): CNBC + MarketWatch (Reuters public RSS is dead — verified 2026-07-12); ticker tagging

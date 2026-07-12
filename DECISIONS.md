@@ -609,6 +609,44 @@ A "Decision Framework" phase is added to the long-term roadmap. Nothing else cha
 
 ---
 
+## ADR-013
+
+### Title
+
+AlphaLab Is an Evidence Engine; Evidence Is Graph-Ready
+
+### Date
+
+2026-07-12
+
+### Status
+
+Accepted
+
+### Context
+
+Three refinements from the owner, approved 2026-07-12:
+
+1. The deepest abstraction of the platform is an **Evidence Engine**. Dashboards, workspaces, AI analysts, research notebooks, and the future portfolio manager are all *views over the same evidence*.
+2. Evidence should evolve toward an **Evidence Graph**: records reference normalized entities (companies, sectors, products, technologies, indicators, events, people) so future versions can connect information across sources without redesigning the data model. No graph database — relational tables and keys suffice.
+3. Connectors should be able to expose **quality metadata** (trust, freshness, latency, coverage) so downstream systems can reason about evidence quality independently of content.
+
+### Decision
+
+1. `EvidenceRecord` is never an isolated document: an `evidence_entities` join table links every record to typed entities via `(entity_type, entity_key)` — e.g. (instrument, "MU"), (sector, SIC "3674"), (indicator, "cpi"). Entity *master* tables are added per type when a consumer needs them (instruments already exists); until then, `entity_key` is a well-defined soft reference. This is the minimal relational form of a graph edge, upgradeable later without breaking the model.
+2. The connector contract keeps `metadata()`/`health()` as the seam for quality reporting; trust and source type come from the source registry (ADR-011), and freshness/latency/coverage metrics attach to these existing structures when a consumer (the Decision Framework, ADR-012) needs them.
+3. The Evidence Engine framing is recorded in PROJECT.md as the platform's core abstraction. It does not change the layered architecture — it names what the layers exist to serve.
+
+### Reasoning
+
+The cost of graph-readiness today is one join table. The cost of retrofitting entity links onto millions of isolated documents later is a re-ingestion campaign. Same logic as ADR-004 and ADR-010: encode the invariant in the data shape while data volume is zero.
+
+### Consequences
+
+Sprint C's evidence storage ships with `evidence_entities` from day one. Queries like "all evidence touching MU" are entity-link queries, not text searches.
+
+---
+
 # Session Journal
 
 ---
@@ -825,6 +863,44 @@ Sprint B — LLM Gateway (ADR-006) + workspace synthesis: Executive Summary, Bul
 ### Notes
 
 Sprint A guiding-question check: every item shipped serves "make a better decision on a stock I already chose."
+
+---
+
+## Session 006
+
+### Date
+
+2026-07-12
+
+### Goal
+
+Evidence-first refinement (ADR-011/012/013) and Sprint C tasks C1–C3.
+
+### Completed
+
+* ADR-011 (EvidenceRecord, provenance trust levels, source tiers, free-only), ADR-012 (Decision Framework: preserve the contract, defer the engine), ADR-013 (Evidence Engine framing; graph-ready evidence via `evidence_entities`).
+* Source availability verification: EDGAR/Fed/Treasury/PRNewswire/CNBC/MarketWatch live; Reuters public RSS dead; Nasdaq earnings API flaky; FRED needs a free key.
+* C1: source registry (`app/config/evidence_sources.py`) — trust measures provenance, never interpretive accuracy.
+* C2: `evidence_records` + `evidence_entities` (migration 0004, also adds `instruments.cik`); repository with entity-linked queries, filters, and source-scoped external-id dedup.
+* C3: SEC EDGAR connector (official endpoints only), deterministic form/8-K-item → category mapping (2.02→earnings, 5.02→press_release, …), insider Forms 3/4/5/144 excluded for v0.1; CIK resolution via the official ticker map with instrument-catalog caching; `GET /api/v1/evidence/{symbol}` with auto-ingest (6h staleness), category/min_trust/since filters.
+* 54 backend tests passing; verified live: 40 real MU filings ingested, categorized, trust-labeled, entity-linked.
+
+### Challenges
+
+* SEC returns 403 for User-Agents without contact info — the UA is now configuration (`ALPHALAB_SEC_USER_AGENT`, flows through compose from .env; contact email never enters the repo).
+
+### Technical Debt
+
+* Evidence records carry title/metadata/URL but not full filing text (retrieval is a follow-up task).
+* EDGAR refresh refetches the whole submissions JSON; per-company Atom feeds would be incremental (fine at current scale).
+
+### Next Recommended Task
+
+C5–C8: press-release wire connector (GlobeNewswire/BusinessWire pre-task), Tier 2 RSS (CNBC/MarketWatch), Evidence Engine + workspace "Company Evidence" section with trust badges. Then Sprint C2 (catalysts) and Sprint B (LLM synthesis).
+
+### Notes
+
+The platform's core abstraction is now named: AlphaLab is an Evidence Engine (ADR-013, PROJECT.md).
 
 ---
 

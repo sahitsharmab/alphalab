@@ -50,6 +50,11 @@ class Settings(BaseSettings):
     # External providers
     nowflation_base_url: str = "https://nowflation.com"
     yahoo_base_url: str = "https://query1.finance.yahoo.com"
+    sec_data_base_url: str = "https://data.sec.gov"
+    sec_www_base_url: str = "https://www.sec.gov"
+    # SEC fair-access policy asks for contact info in the User-Agent —
+    # override with your email via ALPHALAB_SEC_USER_AGENT.
+    sec_user_agent: str = "AlphaLab/0.1 (personal research)"
     http_timeout_seconds: float = 30.0
 
     # Workspace
