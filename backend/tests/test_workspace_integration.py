@@ -7,6 +7,7 @@ Yahoo served by a mock transport. Requires PostgreSQL (see conftest).
 import json
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 
 import httpx
 import pytest
@@ -249,3 +250,31 @@ async def test_unknown_symbol_is_404(workspace_client: httpx.AsyncClient) -> Non
 async def test_invalid_symbol_is_422(workspace_client: httpx.AsyncClient) -> None:
     response = await workspace_client.get("/api/v1/workspace/BAD!SYM")
     assert response.status_code == 422
+
+
+async def test_risk_plan_full_slice(workspace_client: httpx.AsyncClient) -> None:
+    built = await workspace_client.get("/api/v1/workspace/MU")
+    assert built.status_code == 200
+
+    response = await workspace_client.post(
+        "/api/v1/risk-plans",
+        json={
+            "symbol": "MU",
+            "account_size": "10000",
+            "entry": "120",
+            "invalidation": "115",
+            "target": "135",
+            "max_dollar_risk": "100",
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["direction"] == "long"
+    assert Decimal(body["dollar_risk_per_share"]) == 5
+    assert body["maximum_shares"] == 20
+    assert Decimal(body["risk_reward_ratio"]) == 3
+    assert any("not a recommendation" in item for item in body["assumptions"])
+
+    latest = await workspace_client.get("/api/v1/risk-plans/MU/latest")
+    assert latest.status_code == 200
+    assert latest.json()["id"] == body["id"]

@@ -9,6 +9,7 @@ from app.models.evidence import EvidenceEntity, EvidenceRecord
 from app.models.macro import MacroObservation, MacroSeries, RawPayload
 from app.models.market import Instrument, MarketBar
 from app.models.research import WorkspaceSnapshot
+from app.models.risk import RiskPlan
 
 __all__ = [
     "CalendarEvent",
@@ -19,5 +20,6 @@ __all__ = [
     "MacroSeries",
     "MarketBar",
     "RawPayload",
+    "RiskPlan",
     "WorkspaceSnapshot",
 ]

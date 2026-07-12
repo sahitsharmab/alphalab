@@ -132,6 +132,41 @@ export function getManualAnalysisPacket(
   );
 }
 
+export interface RiskPlanRequest {
+  symbol: string;
+  account_size: string;
+  entry: string;
+  invalidation: string;
+  target: string;
+  max_dollar_risk: string;
+}
+
+export interface RiskPlanAssessment extends RiskPlanRequest {
+  id: number;
+  direction: "long" | "short";
+  dollar_risk_per_share: string;
+  maximum_shares: number;
+  position_value: string;
+  account_exposure_pct: string;
+  account_risk_pct: string;
+  reward_per_share: string;
+  risk_reward_ratio: string;
+  atr_per_share: string | null;
+  invalidation_distance_atr: string | null;
+  max_drawdown_1y: string | null;
+  warnings: string[];
+  assumptions: string[];
+  created_at: string;
+}
+
+export function createRiskPlan(requestBody: RiskPlanRequest): Promise<RiskPlanAssessment> {
+  return request<RiskPlanAssessment>("/api/v1/risk-plans", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(requestBody),
+  });
+}
+
 export interface Health {
   status: "ok" | "degraded";
   environment: string;

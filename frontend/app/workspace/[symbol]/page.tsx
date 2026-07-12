@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import EvidenceSectionCard from "@/components/EvidenceSection";
 import LineChart, { ChartPoint } from "@/components/LineChart";
+import RiskPlanner from "@/components/RiskPlanner";
 import TickerSearch from "@/components/TickerSearch";
 import { getManualAnalysisPacket, getWorkspace, WorkspaceView } from "@/lib/api";
 import { theme } from "@/lib/theme";
@@ -195,6 +196,8 @@ export default function WorkspacePage() {
           {view.sections.map((section) => (
             <EvidenceSectionCard key={section.id} section={section} />
           ))}
+
+          <RiskPlanner symbol={symbol} currentPrice={view.quote.price} />
 
           <p style={{ fontSize: 11, color: theme.inkMuted, margin: "4px 4px 0" }}>
             Generated {new Date(view.generated_at).toLocaleString("en-US")} · every statement is
