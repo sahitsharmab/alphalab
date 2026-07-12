@@ -22,14 +22,17 @@ Prefer improving architecture over adding features.
 
 Always read these files **before writing any code**, in the following order:
 
+0. HANDOFF.md — current state, environment quirks, and continuation guide
 1. PROJECT.md
 2. ARCHITECTURE.md
 3. DECISIONS.md
 4. TASKS.md
 
-These four files define the project.
+These files define the project.
 
 Do not begin implementation until they have been read.
+
+Keep HANDOFF.md's "Current State" and "What Is NOT Built Yet" sections up to date at the end of every session, alongside TASKS.md and DECISIONS.md.
 
 ---
 
