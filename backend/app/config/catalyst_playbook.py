@@ -23,7 +23,7 @@ snapshots stay interpretable.
 
 from app.schemas.workspace import CatalystAssessment
 
-PLAYBOOK_VERSION = "1.0.0"
+PLAYBOOK_VERSION = "1.1.0"
 
 
 def _entry(
@@ -232,7 +232,10 @@ PLAYBOOK: dict[str, CatalystAssessment] = {
             why_it_matters=(
                 "The University of Michigan survey pairs consumer confidence with "
                 "one of the most-watched inflation-expectations readings — the Fed "
-                "treats expectations as an input to actual inflation."
+                "treats expectations as an input to actual inflation. Timing note: "
+                "this timeline shows the scheduled FINAL release (via FRED); the "
+                "market-moving preliminary reading lands roughly two weeks earlier "
+                "and has no free schedule source."
             ),
             transmission=(
                 "Inflation-expectations surprise",
@@ -247,6 +250,63 @@ PLAYBOOK: dict[str, CatalystAssessment] = {
             supportive_scenario="Anchored inflation expectations with stable sentiment.",
             adverse_scenario=(
                 "Rising long-run inflation expectations — pressures the Fed toward hawkishness."
+            ),
+            horizon="Intraday",
+        ),
+        _entry(
+            kind="EMPIRE_STATE",
+            importance="medium",
+            typical_time_et="08:30 ET",
+            why_it_matters=(
+                "The first regional manufacturing survey of each month (NY Fed) — "
+                "a timely but volatile preview of national manufacturing momentum "
+                "ahead of the ISM reading."
+            ),
+            transmission=(
+                "Regional activity surprise",
+                "National manufacturing expectations",
+                "Growth narrative",
+                "Cyclical vs defensive sentiment",
+            ),
+            watch=(
+                "Headline index vs consensus",
+                "New orders component",
+                "Prices paid (inflation pressure signal)",
+            ),
+            supportive_scenario="Rebounding new orders with easing prices paid.",
+            adverse_scenario=(
+                "Sharp contraction reinforcing slowdown fears, or hot prices paid "
+                "reinforcing inflation fears."
+            ),
+            horizon="Intraday",
+        ),
+        _entry(
+            kind="PHILLY_FED",
+            importance="medium",
+            typical_time_et="08:30 ET",
+            why_it_matters=(
+                "A timely read on Mid-Atlantic manufacturing. Alone it rarely moves "
+                "indexes, but paired with the Empire State survey it shapes "
+                "expectations for the national ISM print and colors the growth "
+                "narrative in data-heavy weeks."
+            ),
+            transmission=(
+                "Regional activity surprise",
+                "National manufacturing expectations (ISM)",
+                "Growth narrative",
+                "Industrial/cyclical sentiment",
+            ),
+            watch=(
+                "Headline index vs consensus",
+                "New orders and prices-paid components",
+                "Reaction in industrials and cyclicals",
+            ),
+            supportive_scenario=(
+                "Improving orders with easing prices paid — growth without renewed "
+                "inflation pressure."
+            ),
+            adverse_scenario=(
+                "Contraction plus rising prices paid — a stagflation-flavored reading."
             ),
             horizon="Intraday",
         ),

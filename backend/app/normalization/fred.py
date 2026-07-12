@@ -37,7 +37,7 @@ def _release(release_id: int, kind: str, title: str) -> TrackedRelease:
     )
 
 
-#: Verified against /fred/releases on 2026-07-12.
+#: Verified against /fred/releases on 2026-07-12 (321/351 verified same day).
 TRACKED_RELEASES: tuple[TrackedRelease, ...] = (
     _release(10, "CPI", "Consumer Price Index (CPI)"),
     _release(46, "PPI", "Producer Price Index (PPI)"),
@@ -46,6 +46,8 @@ TRACKED_RELEASES: tuple[TrackedRelease, ...] = (
     _release(53, "GDP", "Gross Domestic Product (GDP)"),
     _release(54, "PCE", "Personal Income and Outlays (PCE inflation)"),
     _release(91, "CONSUMER_SENTIMENT", "University of Michigan Surveys of Consumers"),
+    _release(321, "EMPIRE_STATE", "Empire State Manufacturing Survey"),
+    _release(351, "PHILLY_FED", "Philadelphia Fed Manufacturing Survey"),
 )
 
 

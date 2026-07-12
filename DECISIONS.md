@@ -1360,6 +1360,53 @@ Run M1a during the next regular market session. Measure Twelve Data delay/finali
 
 ---
 
+## Session 015
+
+### Date
+
+2026-07-12
+
+### Goal
+
+Prepare the owner's first live trading week: review Session 014's shipped
+tracks, close the visual-verification gap, ready M1a for Monday, and close
+event-coverage gaps the owner identified against a real analyst weekly brief.
+
+### Completed
+
+* Screenshot-verified Session 014's four features (What Changed, Relative
+  Context, Risk Planner with a live $25k/$250 example, watchlist page) —
+  the verification Session 014 could not run without a browser.
+* Seeded NVDA (owner's holding): workspace built and added to the watchlist.
+* Added `backend/scripts/m1a_probe.py`: rate-limit-safe weekday probe that
+  measures Twelve Data appearance lag, in-progress-bar behavior, finalized-bar
+  revisions, and native-vs-derived NBIS 5m diffs; results gitignored.
+* Coverage audit of the owner's example week: CPI/PPI/retail/Fed events were
+  covered; Philly Fed and Empire State were not. Verified both in the FRED
+  catalog (releases 351, 321; future dates confirmed) and added them to
+  TRACKED_RELEASES with playbook entries — playbook bumped to v1.1.0.
+* Documented the UMich timing subtlety in its playbook card: FRED schedules
+  only the FINAL monthly release; the preliminary mid-month reading has no
+  free schedule source.
+* 91 tests green; ruff/mypy/format clean; live-verified the NVDA timeline
+  shows CPI 07-14, PPI + Empire State 07-15, Retail Sales + Philly Fed 07-16.
+
+### Remaining Coverage Gaps (deliberate, tracked)
+
+* Market-wide/geopolitical breaking events (e.g. a Strait-of-Hormuz headline):
+  no market-wide news source yet — candidate: verified general-market RSS
+  (CNBC/MarketWatch, trust 8) as a Market Context section. Needs owner
+  prioritization.
+* Earnings calendar (single-stock and season breadth): still no verified free
+  source (C2-2). FMP free tier remains the untested candidate (needs a key).
+
+### Next Recommended Task
+
+Monday (2026-07-13): start `m1a_probe.py` ~09:25 ET, analyze results into a
+scorecard verdict; owner trades through the workspace and logs friction.
+
+---
+
 # Open Questions
 
 Questions that have not yet been answered.

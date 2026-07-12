@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Catalyst Timeline now also tracks the Empire State (NY Fed) and Philadelphia Fed manufacturing surveys, with playbook context; the UMich sentiment playbook card now explains that only the scheduled final release has a free schedule source (the preliminary mid-month reading does not).
+
 - Daily momentum and relative context: Technical Overview now includes 9/21-day EMA distances and 1/5-day momentum; a new evidence-backed section compares the stock with SPY and QQQ (explicit ETF proxies) across 1-week, 1-month, and 3-month windows.
 - What Changed Since the Previous Workspace: each build compares price, RSI, EMA distances, new company evidence, and new catalysts with the immediately prior persisted workspace snapshot.
 - Deterministic Risk Planner: user-owned entry, invalidation, target, account size, and dollar-risk inputs produce position-size constraints, risk/reward, ATR/drawdown context, and catalyst warnings without issuing a trade recommendation.
