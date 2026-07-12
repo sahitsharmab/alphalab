@@ -96,6 +96,10 @@ def yahoo_mock() -> httpx.MockTransport:
             return httpx.Response(
                 200, text=make_yahoo_chart_json("SPY", BENCH_CLOSES, "SPDR S&P 500")
             )
+        if "/finance/chart/QQQ" in path:
+            return httpx.Response(
+                200, text=make_yahoo_chart_json("QQQ", BENCH_CLOSES, "Invesco QQQ Trust")
+            )
         return httpx.Response(404, json={"chart": {"result": None, "error": {"code": "Not Found"}}})
 
     return httpx.MockTransport(handler)
@@ -148,7 +152,15 @@ async def test_workspace_end_to_end(workspace_client: httpx.AsyncClient) -> None
     assert len(body["price_history"]) > 200
 
     sections = {s["id"]: s for s in body["sections"]}
-    assert set(sections) == {"technical", "historical", "evidence", "catalysts", "macro"}
+    assert set(sections) == {
+        "technical",
+        "historical",
+        "relative",
+        "evidence",
+        "catalysts",
+        "macro",
+    }
+    assert "ETF proxy" in " ".join(s["text"] for s in sections["relative"]["statements"])
 
     # ADR-010 traceability: every cited evidence id resolves in its section.
     for section in sections.values():

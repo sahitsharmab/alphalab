@@ -56,6 +56,20 @@ def test_relative_volume() -> None:
     assert ft.relative_volume(volumes, 20) == 3.0
 
 
+def test_relative_return_uses_shared_dates_and_compounds_correctly() -> None:
+    asset = {1: 100.0, 2: 105.0, 3: 110.0, 4: 120.0}
+    benchmark = {1: 200.0, 3: 210.0, 4: 220.0, 5: 230.0}
+
+    result = ft.relative_return(asset, benchmark, window=2)
+
+    assert result is not None
+    assert math.isclose(result, (120 / 100) / (220 / 200) - 1)
+
+
+def test_relative_return_requires_sufficient_overlap() -> None:
+    assert ft.relative_return({1: 100.0}, {1: 200.0}, window=1) is None
+
+
 def test_beta_of_scaled_series_matches_scale() -> None:
     # Asset return = 2 x benchmark return each day → beta 2. The benchmark
     # returns must VARY: constant returns have zero variance and beta is

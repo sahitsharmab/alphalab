@@ -13,7 +13,7 @@ import math
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-FEATURE_VERSION = "1.0.0"
+FEATURE_VERSION = "1.1.0"
 
 TRADING_DAYS_PER_YEAR = 252
 
@@ -128,6 +128,31 @@ def relative_volume(volumes: Sequence[float], window: int = 20) -> float | None:
     if baseline == 0:
         return None
     return volumes[-1] / baseline
+
+
+def relative_return(
+    asset_closes_by_date: Mapping[Any, float],
+    benchmark_closes_by_date: Mapping[Any, float],
+    window: int,
+) -> float | None:
+    """Asset return relative to benchmark over ``window`` shared trading days.
+
+    Compounding-correct: ``(1 + r_asset) / (1 + r_benchmark) - 1`` computed on
+    the same span of shared dates, so calendar mismatches cannot skew it.
+    Keys must be mutually sortable (dates in production, ints in tests).
+    """
+    shared = sorted(set(asset_closes_by_date) & set(benchmark_closes_by_date))
+    if len(shared) <= window:
+        return None
+    span = shared[-(window + 1) :]
+    first, last = span[0], span[-1]
+    if asset_closes_by_date[first] == 0 or benchmark_closes_by_date[first] == 0:
+        return None
+    asset_r = asset_closes_by_date[last] / asset_closes_by_date[first] - 1
+    bench_r = benchmark_closes_by_date[last] / benchmark_closes_by_date[first] - 1
+    if bench_r <= -1:
+        return None
+    return (1 + asset_r) / (1 + bench_r) - 1
 
 
 def beta(

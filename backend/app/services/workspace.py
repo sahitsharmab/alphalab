@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.engines.catalysts import build_catalysts_section
 from app.engines.evidence import build_company_evidence_section
 from app.engines.inflation import build_macro_section
+from app.engines.relative import build_relative_section
 from app.engines.technical import build_historical_section, build_technical_section
 from app.features import technical as ft
 from app.models.research import WorkspaceSnapshot
@@ -22,6 +23,7 @@ from app.repositories.macro import MacroObservationRepository
 from app.repositories.market import MarketBarRepository
 from app.schemas.calendar import CalendarEventOut
 from app.schemas.evidence import EntityType, EvidenceRecordOut
+from app.schemas.market import MarketBarOut
 from app.schemas.workspace import PricePoint, QuoteSummary, WorkspaceView
 from app.services.calendar_ingestion import CalendarIngestionService
 from app.services.evidence_ingestion import EvidenceIngestionService
@@ -56,10 +58,13 @@ class WorkspaceService:
     async def build(self, symbol: str, force_refresh: bool = False) -> WorkspaceView:
         symbol = symbol.upper()
         instrument = await self._market.ensure_history(symbol, force=force_refresh)
-        benchmark_bars = []
-        if symbol != self._benchmark_symbol:
-            await self._market.ensure_history(self._benchmark_symbol)
-            benchmark_bars = await self._bars.get_bars(self._benchmark_symbol)
+        context_bars: dict[str, list[MarketBarOut]] = {}
+        for context_symbol in (self._benchmark_symbol, "QQQ"):
+            if context_symbol == symbol or context_symbol in context_bars:
+                continue
+            await self._market.ensure_history(context_symbol)
+            context_bars[context_symbol] = await self._bars.get_bars(context_symbol)
+        benchmark_bars = context_bars.get(self._benchmark_symbol, [])
 
         bars = await self._bars.get_bars(symbol)
         if not bars:
@@ -83,6 +88,7 @@ class WorkspaceService:
                 benchmark_symbol=self._benchmark_symbol if benchmark_bars else None,
                 benchmark_bars=benchmark_bars or None,
             ),
+            build_relative_section(symbol, bars, context_bars),
             build_company_evidence_section(evidence_records),
             build_catalysts_section(
                 calendar_events,

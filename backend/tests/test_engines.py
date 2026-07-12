@@ -9,6 +9,7 @@ from datetime import UTC, date, datetime
 from decimal import Decimal
 
 from app.engines.inflation import build_macro_section
+from app.engines.relative import build_relative_section
 from app.engines.technical import build_historical_section, build_technical_section
 from app.schemas.macro import MacroObservationOut
 from tests.helpers import make_bars
@@ -34,7 +35,8 @@ def test_technical_section_uptrend() -> None:
     texts = " ".join(s.text for s in section.statements)
     assert "uptrend" in texts.lower()
     evidence_ids = {e.id for e in section.evidence}
-    assert {"last_close", "ema50", "ema200", "rsi14"} <= evidence_ids
+    assert {"last_close", "ema9", "ema21", "ema50", "ema200", "rsi14"} <= evidence_ids
+    assert "1-5 day momentum read" in texts
 
 
 def test_technical_section_degrades_on_short_history() -> None:
@@ -54,6 +56,21 @@ def test_historical_section_has_returns_drawdown_beta() -> None:
     beta_item = next(e for e in section.evidence if e.id == "beta_1y")
     assert beta_item.value is not None
     assert beta_item.value > 1.5
+
+
+def test_relative_section_labels_etf_proxies_and_resolves_evidence() -> None:
+    asset = make_bars("TST", [100.0 * (1.01**i) for i in range(80)])
+    spy = make_bars("SPY", [400.0 * (1.002**i) for i in range(80)])
+    qqq = make_bars("QQQ", [300.0 * (1.004**i) for i in range(80)])
+
+    section = build_relative_section("TST", asset, {"SPY": spy, "QQQ": qqq})
+
+    texts = " ".join(statement.text for statement in section.statements)
+    assert "SPY (S&P 500 ETF proxy)" in texts
+    assert "QQQ (Nasdaq-100 ETF proxy)" in texts
+    assert "Sector and peer comparison: not shown" in texts
+    evidence_ids = {item.id for item in section.evidence}
+    assert {"rel_1w_spy", "rel_1m_spy", "rel_3m_spy"} <= evidence_ids
 
 
 def _yoy(values: list[tuple[str, str]]) -> list[MacroObservationOut]:

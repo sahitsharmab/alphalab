@@ -104,6 +104,29 @@ def build_technical_section(symbol: str, bars: list[MarketBarOut]) -> WorkspaceS
             e50,
         )
 
+    # --- Short-term structure: price vs EMA9/EMA21 (1-5 day horizon) ---
+    ema9 = ft.ema(closes, 9)
+    ema21 = ft.ema(closes, 21)
+    if ema9 is not None and ema21 is not None:
+        e9 = section.evidence("ema9", "9-day EMA", ema9, f"{ema9:,.2f}")
+        e21 = section.evidence("ema21", "21-day EMA", ema21, f"{ema21:,.2f}")
+        above9, above21 = price > ema9, price > ema21
+        if above9 and above21:
+            structure = "constructive (price above both)"
+        elif not above9 and not above21:
+            structure = "weak (price below both)"
+        else:
+            structure = "mixed"
+        section.say(
+            f"Short-term structure is {structure}: price is "
+            f"{_pct(abs(price / ema9 - 1))} {'above' if above9 else 'below'} the 9-day EMA "
+            f"and {_pct(abs(price / ema21 - 1))} {'above' if above21 else 'below'} the "
+            "21-day EMA — the 1-5 day momentum read.",
+            price_id,
+            e9,
+            e21,
+        )
+
     # --- Momentum: RSI + short-window returns ---
     rsi14 = ft.rsi(closes, 14)
     r1m = ft.window_return(closes, 21)
