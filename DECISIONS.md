@@ -791,6 +791,45 @@ backlog.
 
 ---
 
+## ADR-017
+
+### Title
+
+Deterministic Daily Decision Tools Use Persisted Research and User-Owned Inputs
+
+### Date
+
+2026-07-12
+
+### Status
+
+Accepted
+
+### Context
+
+Intraday provider selection is blocked until a regular market session, while daily bars, workspace snapshots, calendar events, and explicit user inputs are already available. The product still needs relative context, repeat-build awareness, risk planning, and a small user-defined universe without smuggling in recommendations or provider-dependent behavior.
+
+### Decision
+
+Ship these as independent deterministic slices inside the existing architecture:
+
+* Relative Context computes shared-date returns against SPY and QQQ, always labeled ETF proxies.
+* What Changed compares the current structured workspace with the immediately prior persisted snapshot. "Previous" means previous build, not previous trading day.
+* Risk plans persist the user's entry, invalidation, target, account size, and dollar-risk cap plus a reproducible assessment. AlphaLab never invents an invalidation; maximum shares is a constraint, not advice.
+* The watchlist is user-curated application state. Its overview reads normalized stored bars and pure features, with no opaque score, ranking, discovery, or connector calls.
+
+Intraday session structure and time-adjusted relative volume remain blocked on M1. Sector/peer comparisons remain blocked until sector mapping and an explicit peer-universe contract exist.
+
+### Reasoning
+
+These tools improve a daily decision routine using data AlphaLab already trusts, preserve evidence-before-opinion, and avoid coupling useful product work to an unverified feed. Explicit boundaries prevent ETF proxies, snapshot timing, or mathematical position sizing from being overstated as investment conclusions.
+
+### Consequences
+
+Two new persisted user-state tables (`risk_plans`, `watchlist_items`) require Alembic migrations. Workspace builds load SPY and QQQ daily history and the prior snapshot. The watchlist does not yet trigger scheduled ticker refreshes; users build a workspace before adding a symbol.
+
+---
+
 # Session Journal
 
 ---
@@ -1281,6 +1320,43 @@ sensitivity; decide whether the manual packet should carry playbook context.
 M1a weekday verification (Monday 2026-07-14 market session): Twelve Data live
 delay/current-bar finalization + NBIS 5m mismatch. Alternatively, FRED/ALFRED
 observations are now unblocked for the bitemporal macro backlog.
+
+---
+
+## Session 014
+
+### Date
+
+2026-07-12
+
+### Goal
+
+Complete the Sunday-compatible daily decision-support tracks while M1a waits for regular market hours: M2 daily momentum/relative context, workspace change detection, M3 Risk Planner, and a user-curated watchlist.
+
+### Completed
+
+* Added EMA9/EMA21 distances, 1/5-day momentum, and a pure shared-date relative-return feature.
+* Added deterministic Relative Context versus SPY and QQQ, explicitly labeled ETF proxies, over 1-week/1-month/3-month windows with evidence-resolved statements.
+* Added What Changed against the immediately prior persisted workspace build: price, RSI, EMA distances, and newly observed company evidence/catalysts.
+* Added persisted long/short risk plans with user-defined invalidation, deterministic maximum shares, exposure, risk/reward, ATR/drawdown context, and seven-day catalyst warnings.
+* Added a persisted user-curated watchlist and overview API/page with daily momentum and proxy-relative metrics, but no ranking or automatic discovery.
+* Added migrations 0006 and 0007, backend API routes, frontend controls/pages, and unit/integration coverage. The suite now contains 91 backend tests.
+* Rebuilt the live containers and verified NBIS end to end: all seven workspace sections resolve, repeated builds produce a previous-snapshot comparison, a $25,000/$250-risk example produces a 17-share maximum, and NBIS appears in the watchlist overview.
+
+### Challenges
+
+Docker Compose briefly raced while replacing an existing backend container; retrying the non-destructive compose start completed normally. The session's in-app browser list was empty, so visual screenshot verification could not be performed; API, container, production-build, and frontend type checks remain available gates.
+
+### Technical Debt
+
+* M2 intraday session structure and time-adjusted relative volume remain correctly blocked on M1.
+* Sector/peer context needs SEC SIC sector mapping and an explicit peer-universe contract; SPY/QQQ proxies must not be presented as peers.
+* The watchlist defines a ticker universe but is not yet wired to scheduled refreshes.
+* Add frontend component tests for the risk form and watchlist interactions.
+
+### Next Recommended Task
+
+Run M1a during the next regular market session. Measure Twelve Data delay/finalization and resolve the NBIS native-versus-derived five-minute mismatch before selecting or rejecting the provider.
 
 ---
 

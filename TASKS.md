@@ -47,11 +47,16 @@ M1b–M1e may begin only after M1a selects a provider. No provider is selected a
 
 ### Sprint M2 — Momentum and Relative Context
 
-* [ ] M2. Deterministic session structure, momentum change, time-adjusted relative volume, SPY/QQQ/sector/peer context, and change since prior snapshot
+* [x] M2a. Daily momentum and relative context (2026-07-12): 9/21-day EMA distances, 1/5-day momentum, SPY and QQQ ETF-proxy relative returns over 1-week/1-month/3-month windows, deterministic relative-strength trend, and change since the immediately prior persisted workspace snapshot
+* [ ] M2b. Intraday-only remainder after M1 ships: deterministic session structure and time-adjusted relative volume; sector/peer context remains blocked on Sprint C4 sector mapping and an explicit peer-universe design
 
 ### Sprint M3 — Risk Planner
 
-* [ ] M3. User entry/invalidation/target/risk inputs; position sizing, risk/reward, volatility context, and catalyst/gap warnings
+* [x] M3. User entry/invalidation/target/risk inputs; deterministic position sizing, risk/reward, ATR/drawdown context, and catalyst/gap warnings (2026-07-12)
+
+### Watchlist — User-Curated Momentum Overview
+
+* [x] W1. Persist a user-selected ticker list with optional notes; show stored daily momentum, EMA9/21 distances, and one-month SPY/QQQ ETF-proxy relative returns without opaque ranking or automatic stock discovery (2026-07-12)
 
 ### Sprint M4 — Integrated Momentum Decision Workspace
 

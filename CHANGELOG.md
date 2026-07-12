@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Daily momentum and relative context: Technical Overview now includes 9/21-day EMA distances and 1/5-day momentum; a new evidence-backed section compares the stock with SPY and QQQ (explicit ETF proxies) across 1-week, 1-month, and 3-month windows.
+- What Changed Since the Previous Workspace: each build compares price, RSI, EMA distances, new company evidence, and new catalysts with the immediately prior persisted workspace snapshot.
+- Deterministic Risk Planner: user-owned entry, invalidation, target, account size, and dollar-risk inputs produce position-size constraints, risk/reward, ATR/drawdown context, and catalyst warnings without issuing a trade recommendation.
+- User-curated momentum watchlist: add stored tickers and notes, then compare daily returns, EMA distances, and one-month SPY/QQQ-relative context in a single overview.
 - Catalyst Timeline: the workspace catalysts section is now a chronological timeline that includes official economic release dates (CPI, PPI, jobs report, retail sales, GDP, PCE, UMich sentiment) from the FRED release-dates API (free key), alongside Fed events. Each event carries an expandable playbook card — why it matters, the transmission chain to the stock, what to watch, and supportive/adverse conditional scenarios — clearly labeled as versioned editorial assessment, not evidence. The timeline is framed by the stock's measured 1-year beta vs SPY and honestly reports that per-event historical sensitivity is not yet measured.
 
 - Manual AI research packet: copy a versioned, source-linked workspace prompt for analysis in ChatGPT or Claude without configuring or paying for an LLM API.

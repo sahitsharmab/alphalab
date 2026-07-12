@@ -7,16 +7,16 @@ the project documents in this order:
 1. AGENTS.md — your role, rules, and workflow
 2. PROJECT.md — vision and philosophy (note "The Evidence Engine" and the v0.1 MVP section)
 3. ARCHITECTURE.md — layers and dependency rules
-4. DECISIONS.md — ADR-001..016 and the session journal (read the ADRs; skim the journal)
+4. DECISIONS.md — ADR-001..017 and the session journal (read the ADRs; skim the journal)
 5. TASKS.md — the backlog; the "MVP Roadmap" section is the current plan
 
 ---
 
-## Current State (2026-07-12, Catalyst Timeline shipped; M1a still blocked on a weekday run)
+## Current State (2026-07-12, deterministic daily decision tools shipped; M1a still blocked on a weekday run)
 
 Everything below is implemented, tested, verified live, and green in CI:
 
-* **Sprint 0** — FastAPI backend, TimescaleDB, Alembic (4 migrations), Next.js frontend, Docker Compose, GitHub Actions CI.
+* **Sprint 0** — FastAPI backend, TimescaleDB, Alembic (7 migrations), Next.js frontend, Docker Compose, GitHub Actions CI.
 * **Macro slice** — Nowflation connector → bitemporal `macro_observations` → `GET /api/v1/macro/...` → dashboard with charts (`frontend/app/page.tsx`).
 * **Sprint A: Investment Workspace** — Yahoo connector → bitemporal `market_bars` → pure feature functions → Technical/Historical/Inflation engines → `GET /api/v1/workspace/{symbol}` → `/workspace/[symbol]` page. Every statement carries evidence ids; the `WorkspaceSection` validator rejects untraceable claims.
 * **Sprint C2 (complete): Catalysts** — Fed calendar connector (`/json/calendar.json`, official, no key), `calendar_events` storage; earnings dates honestly gated out (no reliable free source).
@@ -25,17 +25,21 @@ Everything below is implemented, tested, verified live, and green in CI:
 * **Automatic ingestion scheduler** â€” the backend process refreshes Nowflation and the Fed calendar immediately at startup and every 24 hours (configurable); jobs reuse the existing ingestion services, isolate failures, and stop cleanly.
 * **Manual AI research packet (ADR-014)** — every built workspace can be copied as a versioned prompt for ChatGPT/Claude with structured statements, namespaced citations, trust levels, and source URLs. No API key or LLM call.
 * **Momentum product refinement (ADR-015)** — Weekly Thesis and Intraday Execution Context are separate. M1a empirical provider verification is documented in `M1A_PROVIDER_SCORECARD.md`; no intraday provider has passed yet, so M1b was not started.
-* 83 backend tests (unit + integration against real TimescaleDB), ruff + mypy `--strict` clean.
+* **M2a daily momentum and relative context** — the technical read includes 9/21-day EMA distances and 1/5-day momentum. A deterministic Relative Context section compares the selected stock with SPY and QQQ (explicit ETF proxies) over 1-week/1-month/3-month windows. A What Changed section compares the current build with the immediately prior persisted workspace snapshot, including price/RSI/EMA movement and new evidence/catalysts.
+* **M3 Risk Planner** — user-supplied account size, entry, invalidation, target, and dollar-risk cap produce deterministic long/short sizing, risk/reward, ATR/drawdown context, catalyst warnings, and persisted assessments. AlphaLab never chooses the invalidation and labels maximum size as a constraint, not a recommendation.
+* **User-curated watchlist** — persisted symbols and notes feed a deterministic overview of daily returns, EMA distances, and SPY/QQQ-relative context. It does not rank, score, or discover securities.
+* 91 backend tests (unit + integration against real TimescaleDB), ruff + mypy `--strict` clean; frontend production build clean.
 
 **Repo:** https://github.com/sahitsharmab/alphalab — solo dev, direct commits to `main`, CI is the gate (no PRs). Commit messages must NEVER contain AI attribution lines (AGENTS.md rule).
 
 ## What Is NOT Built Yet (next work, in order)
 
 1. **M1a provider verification:** Twelve Data Basic credentials are configured. Resume on a weekday to measure regular-session delay/current-bar finalization and investigate NBIS's 10 mismatching native-vs-derived 5m bars. Basic pre/post access is paid-only and rejected. Do not start M1b until a provider passes.
-2. **Sprint B automated synthesis:** deliberately deferred while the manual packet is used.
-3. **FRED/ALFRED observations** (rates, macro series with vintages — validates ADR-004): now unblocked, the key is configured.
-4. **Catalyst event studies:** point-in-time per-event historical sensitivity to replace "not yet measured".
-5. Deferred: ticker-scoped scheduling, full filing text, Treasury, and expanded market-context feeds.
+2. **M2b intraday remainder:** session structure and time-adjusted relative volume depend on M1; sector/peer context depends on sector mapping plus an explicit peer universe.
+3. **Sprint B automated synthesis:** deliberately deferred while the manual packet is used.
+4. **FRED/ALFRED observations** (rates, macro series with vintages — validates ADR-004): now unblocked, the key is configured.
+5. **Catalyst event studies:** point-in-time per-event historical sensitivity to replace "not yet measured".
+6. Deferred: ticker-scoped scheduler refresh from the new watchlist, full filing text, Treasury, and expanded market-context feeds.
 
 ## Non-Negotiable Invariants
 
@@ -64,7 +68,7 @@ Everything below is implemented, tested, verified live, and green in CI:
 cd backend
 python -m poetry run ruff check .        # + `ruff format .`
 python -m poetry run mypy app            # strict
-python -m poetry run pytest -q           # 83 tests; integration needs the compose db
+python -m poetry run pytest -q           # 91 tests; integration needs the compose db
 cd ../frontend
 npm run build                            # typecheck + build
 ```
