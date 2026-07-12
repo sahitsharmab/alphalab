@@ -124,11 +124,11 @@ export default function WorkspacePage() {
             }}
           >
             {copyStatus === "copying"
-              ? "Preparingâ€¦"
+              ? "Preparing…"
               : copyStatus === "copied"
                 ? "Copied research packet"
                 : copyStatus === "error"
-                  ? "Copy failed â€” retry"
+                  ? "Copy failed — retry"
                   : "Copy for ChatGPT / Claude"}
           </button>
           <button
@@ -199,6 +199,10 @@ export default function WorkspacePage() {
           <p style={{ fontSize: 11, color: theme.inkMuted, margin: "4px 4px 0" }}>
             Generated {new Date(view.generated_at).toLocaleString("en-US")} · every statement is
             expandable to its evidence · AlphaLab informs your thinking; the decision is yours.
+          </p>
+          <p style={{ fontSize: 10, color: theme.inkMuted, margin: "0 4px" }}>
+            This product uses the FRED® API but is not endorsed or certified by the Federal
+            Reserve Bank of St. Louis.
           </p>
         </div>
       )}

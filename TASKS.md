@@ -96,8 +96,18 @@ Deliverable: the workspace gains a **Company Evidence** section (SEC filings, pr
 Deliverable shipped: workspace gains **Upcoming Catalysts** (FOMC decisions/minutes/press conferences, Beige Book, Fed data releases) from the Fed's official calendar JSON — verified, no key, trust 10.
 
 * [x] C2-1. Fed calendar connector (`/json/calendar.json`, BOM + comma-day-list quirks handled), `calendar_events` storage (migration 0005), Catalysts engine + workspace section
-* [ ] C2-1b. CPI/jobs/GDP release dates via FRED release-dates API — **needs a free FRED API key from the owner** (also unblocks rates data). BLS HTML schedule rejected: aggressive bot-blocking (403s observed 2026-07-12).
+* [x] C2-1b. Economic release dates via FRED release-dates API (owner's free key, 2026-07-12): CPI, PPI, Employment Situation, Advance Retail Sales, GDP, PCE (Personal Income & Outlays), UMich Surveys of Consumers — release ids verified live against `/fred/releases`; future dates confirmed. API key never enters stored URLs or logs. BLS HTML schedule rejected: aggressive bot-blocking (403s observed 2026-07-12).
 * [x] C2-2. Earnings date: pre-task verdict — NO reliable free source (Yahoo quoteSummary needs crumb/cookie [401], Nasdaq API flaky). Gated out per ADR-009; the section states the gap honestly. Revisit candidates: company 8-K/PR announcements, FMP free tier w/ key.
+
+## Sprint C3 — Catalyst Timeline ✅ Shipped 2026-07-12 (ADR-016)
+
+Deliverable shipped: the catalysts section becomes a chronological **Catalyst Timeline** — economic releases + Fed events, each with an expandable playbook card (why it matters, transmission chain, watch list, conditional scenarios) from versioned editorial configuration, clearly separated from evidence.
+
+* [x] C3-1. Catalyst playbook v1.0.0 (`app/config/catalyst_playbook.py`): 10 event kinds, editorial importance/scenarios/transmission, proxies labeled as proxies, no predictions
+* [x] C3-2. `CatalystAssessment` on `Statement` (ADR-010 extension); timeline engine with beta-based relevance framing ("amplified/dampened") and per-event sensitivity honestly "not yet measured"
+* [x] C3-3. Frontend playbook cards labeled "editorial assessment, not evidence"; FRED® attribution footer (API terms)
+* [ ] C3-followup. Point-in-time event studies → measured per-event historical sensitivity (replaces "not yet measured")
+* [ ] C3-followup. Decide whether the manual research packet should include playbook context (currently excluded to avoid steering the external model)
 
 ## Sprint B — AI synthesis layer (after Evidence Foundation)
 
@@ -197,10 +207,10 @@ Order (approved 2026-07-11): Nowflation first for immediate user value and an en
 * [x] Verify Nowflation API availability, stability, and licensing (2026-07-11: CSV exports open, no key/rate limits; no explicit license — personal use OK, revisit before redistribution)
 * [x] Nowflation Connector (headline gauge; components dataset is a follow-up)
 * [ ] Nowflation components dataset (per-component inflation, ~2.5MB CSV)
-* [ ] FRED Connector (use ALFRED vintages — validates the bitemporal model, ADR-004)
+* [ ] FRED Connector for observations (use ALFRED vintages — validates the bitemporal model, ADR-004). The release-dates slice shipped 2026-07-12 (Catalyst Timeline); the key is configured, so this is now unblocked.
 * [ ] Treasury Connector
 * [ ] BLS Connector
-* [x] Scheduler: daily automatic ingestion for global datasets (Nowflation + Fed calendar); ticker-scoped scheduling waits for a watchlist/universe (2026-07-12)
+* [x] Scheduler: daily automatic ingestion for global datasets (Nowflation + Fed calendar + FRED release dates when the key is configured); ticker-scoped scheduling waits for a watchlist/universe (2026-07-12)
 
 ---
 

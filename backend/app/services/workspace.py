@@ -13,6 +13,7 @@ from app.engines.catalysts import build_catalysts_section
 from app.engines.evidence import build_company_evidence_section
 from app.engines.inflation import build_macro_section
 from app.engines.technical import build_historical_section, build_technical_section
+from app.features import technical as ft
 from app.models.research import WorkspaceSnapshot
 from app.normalization.nowflation import SERIES_HEADLINE_YOY
 from app.repositories.calendar import CalendarEventRepository
@@ -68,6 +69,12 @@ class WorkspaceService:
         today = datetime.now(UTC).date()
         calendar_events = await self._load_calendar(today, force_refresh)
 
+        beta_1y: float | None = None
+        if benchmark_bars:
+            asset_by_date = {b.bar_date: float(b.adj_close) for b in bars}
+            bench_by_date = {b.bar_date: float(b.adj_close) for b in benchmark_bars}
+            beta_1y = ft.beta(asset_by_date, bench_by_date, 252)
+
         sections = [
             build_technical_section(symbol, bars),
             build_historical_section(
@@ -77,7 +84,14 @@ class WorkspaceService:
                 benchmark_bars=benchmark_bars or None,
             ),
             build_company_evidence_section(evidence_records),
-            build_catalysts_section(calendar_events, today),
+            build_catalysts_section(
+                calendar_events,
+                today,
+                symbol=symbol,
+                beta_1y=beta_1y,
+                beta_benchmark=self._benchmark_symbol,
+                beta_as_of=bars[-1].bar_date.isoformat(),
+            ),
             build_macro_section(yoy),
         ]
 
@@ -143,8 +157,14 @@ class WorkspaceService:
     async def _load_calendar(self, today: date, force_refresh: bool) -> list[CalendarEventOut]:
         """Ingest (best-effort) and load upcoming calendar events."""
         if self._calendar_ingestion is not None:
-            try:
-                await self._calendar_ingestion.ensure_fed_calendar(force=force_refresh)
-            except Exception as exc:
-                logger.warning("calendar_ingestion_degraded", error=str(exc))
-        return await self._calendar.list_upcoming(today, limit=40)
+            for ensure in (
+                self._calendar_ingestion.ensure_fed_calendar,
+                self._calendar_ingestion.ensure_economic_releases,
+            ):
+                try:
+                    await ensure(force=force_refresh)
+                except Exception as exc:
+                    logger.warning(
+                        "calendar_ingestion_degraded", step=ensure.__name__, error=str(exc)
+                    )
+        return await self._calendar.list_upcoming(today, limit=60)

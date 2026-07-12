@@ -39,6 +39,8 @@ services:
       ALPHALAB_DB_NAME: ${ALPHALAB_DB_NAME:-alphalab}
       # SEC requires contact info in the User-Agent; set it in .env.
       ALPHALAB_SEC_USER_AGENT: ${ALPHALAB_SEC_USER_AGENT:-AlphaLab/0.1 (personal research)}
+      # Free FRED key enables economic release dates (CPI/PPI/jobs/GDP catalysts).
+      ALPHALAB_FRED_API_KEY: ${ALPHALAB_FRED_API_KEY:-}
       ALPHALAB_SCHEDULER_ENABLED: ${ALPHALAB_SCHEDULER_ENABLED:-true}
       ALPHALAB_SCHEDULER_INTERVAL_HOURS: ${ALPHALAB_SCHEDULER_INTERVAL_HOURS:-24}
     ports:

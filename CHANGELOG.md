@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Catalyst Timeline: the workspace catalysts section is now a chronological timeline that includes official economic release dates (CPI, PPI, jobs report, retail sales, GDP, PCE, UMich sentiment) from the FRED release-dates API (free key), alongside Fed events. Each event carries an expandable playbook card — why it matters, the transmission chain to the stock, what to watch, and supportive/adverse conditional scenarios — clearly labeled as versioned editorial assessment, not evidence. The timeline is framed by the stock's measured 1-year beta vs SPY and honestly reports that per-event historical sensitivity is not yet measured.
+
 - Manual AI research packet: copy a versioned, source-linked workspace prompt for analysis in ChatGPT or Claude without configuring or paying for an LLM API.
 
 - Automatic daily ingestion for Nowflation and the Federal Reserve calendar, with an immediate refresh when the backend starts and configurable scheduling intervals.
@@ -23,3 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - Docker Compose now publishes the database on host port 5433 (was 5432) to avoid clashing with native PostgreSQL installations.
+
+### Fixed
+
+- Garbled characters in the "Copy for ChatGPT / Claude" button states (mojibake from an earlier file-encoding incident).

@@ -15,6 +15,7 @@ from app.api.v1.router import api_router
 from app.config.logging import configure_logging
 from app.config.settings import Settings, get_settings
 from app.connectors.federal_reserve import FederalReserveConnector
+from app.connectors.fred import FredConnector
 from app.connectors.nowflation import NowflationConnector
 from app.database.engine import create_engine, create_session_factory
 from app.scheduler.periodic import PeriodicJob, PeriodicScheduler
@@ -61,13 +62,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         connector = FederalReserveConnector(http_client, settings.federal_reserve_base_url)
         await CalendarIngestionService(session, connector).ensure_fed_calendar()
 
+    async def ingest_economic_releases(session: AsyncSession) -> None:
+        fed = FederalReserveConnector(http_client, settings.federal_reserve_base_url)
+        fred = FredConnector(http_client, settings.fred_api_key, settings.fred_base_url)
+        await CalendarIngestionService(session, fed, fred=fred).ensure_economic_releases()
+
     interval = timedelta(hours=settings.scheduler_interval_hours)
-    scheduler = PeriodicScheduler(
-        (
-            PeriodicJob("nowflation_headline", interval, ingestion_job(ingest_nowflation)),
-            PeriodicJob("fed_calendar", interval, ingestion_job(ingest_fed_calendar)),
+    jobs = [
+        PeriodicJob("nowflation_headline", interval, ingestion_job(ingest_nowflation)),
+        PeriodicJob("fed_calendar", interval, ingestion_job(ingest_fed_calendar)),
+    ]
+    if settings.fred_api_key:
+        jobs.append(
+            PeriodicJob("fred_release_dates", interval, ingestion_job(ingest_economic_releases))
         )
-    )
+    scheduler = PeriodicScheduler(tuple(jobs))
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:

@@ -26,6 +26,29 @@ class EvidenceItem(BaseModel):
     url: str | None = None  # link to the original document where one exists
 
 
+class CatalystAssessment(BaseModel):
+    """Editorial context for a scheduled event, from the versioned playbook.
+
+    This is deliberately NOT evidence (ADR-011: trust levels measure
+    provenance). Importance ratings, transmission chains, and scenarios are
+    AlphaLab's own configured judgment — the UI must label them as such and
+    keep them visually distinct from evidence rows.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    playbook_version: str
+    kind: str  # playbook key, e.g. "CPI"
+    importance: str  # editorial: "very high" | "high" | "medium"
+    typical_time_et: str  # editorial, e.g. "08:30 ET"; "" if unknown
+    why_it_matters: str
+    transmission: tuple[str, ...]  # ordered chain from event to the stock
+    watch: tuple[str, ...]  # metrics/instruments to watch on release
+    supportive_scenario: str  # conditional hypothesis, never a prediction
+    adverse_scenario: str
+    horizon: str  # typical reaction window, e.g. "intraday to one week"
+
+
 class Statement(BaseModel):
     """One conclusion with its supporting evidence references."""
 
@@ -33,6 +56,8 @@ class Statement(BaseModel):
 
     text: str
     evidence_ids: tuple[str, ...]
+    # Present only on catalyst-timeline statements (ADR-016).
+    assessment: CatalystAssessment | None = None
 
 
 class WorkspaceSection(BaseModel):

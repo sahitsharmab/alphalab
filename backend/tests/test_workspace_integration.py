@@ -4,7 +4,9 @@ Real stack (API → services → engines → repositories → TimescaleDB) with
 Yahoo served by a mock transport. Requires PostgreSQL (see conftest).
 """
 
+import json
 from collections.abc import AsyncIterator
+from datetime import UTC, datetime, timedelta
 
 import httpx
 import pytest
@@ -13,12 +15,14 @@ from sqlalchemy import func, select
 
 from app.api.deps import (
     get_federal_reserve_connector,
+    get_fred_connector,
     get_sec_edgar_connector,
     get_yahoo_connector,
     get_yahoo_news_connector,
 )
 from app.config.settings import Settings
 from app.connectors.federal_reserve import FederalReserveConnector
+from app.connectors.fred import FredConnector
 from app.connectors.sec_edgar import SecEdgarConnector
 from app.connectors.yahoo import YahooConnector
 from app.connectors.yahoo_news import YahooNewsConnector
@@ -67,6 +71,20 @@ def fed_mock() -> httpx.MockTransport:
     return httpx.MockTransport(lambda request: httpx.Response(200, text=FED_CALENDAR))
 
 
+def fred_mock() -> httpx.MockTransport:
+    """One upcoming date per tracked release, always within the timeline horizon."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        release_id = int(request.url.params["release_id"])
+        upcoming = (datetime.now(UTC).date() + timedelta(days=3)).isoformat()
+        return httpx.Response(
+            200,
+            text=json.dumps({"release_dates": [{"release_id": release_id, "date": upcoming}]}),
+        )
+
+    return httpx.MockTransport(handler)
+
+
 def yahoo_mock() -> httpx.MockTransport:
     def handler(request: httpx.Request) -> httpx.Response:
         path = request.url.path
@@ -105,6 +123,11 @@ async def workspace_client(
     app.dependency_overrides[get_federal_reserve_connector] = lambda: FederalReserveConnector(
         client=httpx.AsyncClient(transport=fed_mock()),
         base_url="https://fed.test",
+    )
+    app.dependency_overrides[get_fred_connector] = lambda: FredConnector(
+        client=httpx.AsyncClient(transport=fred_mock()),
+        api_key="test-key-not-real",
+        base_url="https://fred.test",
     )
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
@@ -147,6 +170,15 @@ async def test_workspace_end_to_end(workspace_client: httpx.AsyncClient) -> None
     catalyst_texts = " ".join(s["text"] for s in sections["catalysts"]["statements"])
     assert "Next FOMC rate decision: 2099-07-29" in catalyst_texts
     assert "Earnings date: not shown" in catalyst_texts
+
+    # Economic releases (mock FRED) flow into the timeline with playbook context.
+    assert "How to read this timeline" in catalyst_texts
+    cpi = next(
+        s for s in sections["catalysts"]["statements"] if "Consumer Price Index" in s["text"]
+    )
+    assert cpi["assessment"]["kind"] == "CPI"
+    assert cpi["assessment"]["playbook_version"]
+    assert cpi["assessment"]["transmission"]
 
     # Macro section degrades gracefully with no inflation data ingested.
     macro_texts = " ".join(s["text"] for s in sections["macro"]["statements"]).lower()

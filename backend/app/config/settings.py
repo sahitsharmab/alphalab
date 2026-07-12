@@ -53,6 +53,10 @@ class Settings(BaseSettings):
     yahoo_base_url: str = "https://query1.finance.yahoo.com"
     yahoo_news_base_url: str = "https://feeds.finance.yahoo.com"
     federal_reserve_base_url: str = "https://www.federalreserve.gov"
+    fred_base_url: str = "https://api.stlouisfed.org"
+    # Free key from https://fred.stlouisfed.org/docs/api/api_key.html;
+    # empty means the FRED connector (economic release dates) is disabled.
+    fred_api_key: str = ""
     sec_data_base_url: str = "https://data.sec.gov"
     sec_www_base_url: str = "https://www.sec.gov"
     # SEC fair-access policy asks for contact info in the User-Agent —

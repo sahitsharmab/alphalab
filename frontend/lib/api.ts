@@ -71,9 +71,24 @@ export interface EvidenceItem {
   url?: string | null;
 }
 
+/** Editorial playbook context for a scheduled event — judgment, not evidence. */
+export interface CatalystAssessment {
+  playbook_version: string;
+  kind: string;
+  importance: string;
+  typical_time_et: string;
+  why_it_matters: string;
+  transmission: string[];
+  watch: string[];
+  supportive_scenario: string;
+  adverse_scenario: string;
+  horizon: string;
+}
+
 export interface WorkspaceStatement {
   text: string;
   evidence_ids: string[];
+  assessment?: CatalystAssessment | null;
 }
 
 export interface WorkspaceSection {

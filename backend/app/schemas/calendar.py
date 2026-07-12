@@ -13,9 +13,11 @@ class CalendarEventType(StrEnum):
     FOMC_PRESS_CONFERENCE = "fomc_press_conference"
     BEIGE_BOOK = "beige_book"
     FED_STAT_RELEASE = "fed_stat_release"
-    # Future (FRED release-dates API, needs free key): CPI_RELEASE,
-    # JOBS_REPORT, GDP_RELEASE. Earnings dates: no reliable free source
+    # Scheduled official economic data releases (CPI, PPI, jobs, GDP, ...)
+    # via the FRED release-dates API; the release kind lives in
+    # provider_metadata["kind"]. Earnings dates: no reliable free source
     # verified yet (source-risk gate, ADR-009).
+    ECONOMIC_RELEASE = "economic_release"
 
 
 class CalendarEventIn(BaseModel):
@@ -42,6 +44,7 @@ class CalendarEventOut(BaseModel):
     scheduled_on: date
     scheduled_time: str
     url: str
+    provider_metadata: dict[str, Any] = {}
     retrieved_at: datetime
 
 

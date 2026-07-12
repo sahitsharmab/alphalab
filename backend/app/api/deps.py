@@ -12,6 +12,7 @@ from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.connectors.federal_reserve import FederalReserveConnector
+from app.connectors.fred import FredConnector
 from app.connectors.nowflation import NowflationConnector
 from app.connectors.sec_edgar import SecEdgarConnector
 from app.connectors.yahoo import YahooConnector
@@ -70,4 +71,16 @@ def get_federal_reserve_connector(request: Request) -> FederalReserveConnector:
     return FederalReserveConnector(
         client=get_http_client(request),
         base_url=settings.federal_reserve_base_url,
+    )
+
+
+def get_fred_connector(request: Request) -> FredConnector | None:
+    """FRED needs a (free) key; without one the connector is simply absent."""
+    settings = request.app.state.settings
+    if not settings.fred_api_key:
+        return None
+    return FredConnector(
+        client=get_http_client(request),
+        api_key=settings.fred_api_key,
+        base_url=settings.fred_base_url,
     )

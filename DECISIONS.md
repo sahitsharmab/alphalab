@@ -720,6 +720,77 @@ M1 begins with an empirical provider gate. Canonical one-minute bars and derived
 
 ---
 
+## ADR-016
+
+### Title
+
+Catalyst Timeline with a Versioned Editorial Playbook
+
+### Date
+
+2026-07-12
+
+### Status
+
+Accepted
+
+### Context
+
+The Upcoming Catalysts section listed events without helping the trader
+understand relevance, transmission channels, or uncertainty. The owner wants a
+decision-support timeline (why an event matters, what to watch, conditional
+scenarios), inspired by analyst-style weekly briefings. Those briefings mix
+verifiable facts with unverifiable claims (options positioning, short float,
+"typical volatility"), which AlphaLab must not reproduce without sources.
+
+### Decision
+
+1. **Economic release dates** come from the FRED release-dates API (free key,
+   verified live 2026-07-12): CPI, PPI, Employment Situation, Advance Retail
+   Sales, GDP, Personal Income & Outlays (PCE), and UMich Surveys of Consumers,
+   stored as `economic_release` calendar events with the release kind in
+   provider metadata. The API key travels only as a request parameter — never
+   in stored URLs, raw payloads, or logs (httpx request logging is suppressed
+   because it prints full URLs).
+2. **Editorial context is a separate epistemic category from evidence.** A new
+   versioned configuration, the catalyst playbook (`catalyst_playbook.py`,
+   v1.0.0), defines per-event-kind importance, why-it-matters, a transmission
+   chain, watch list, supportive/adverse conditional scenarios, typical release
+   time, and reaction horizon. It attaches to timeline statements as an
+   optional `CatalystAssessment` — never as evidence rows — and the UI labels
+   it "editorial assessment, not evidence" with its version.
+3. **The catalysts section becomes a chronological timeline** framed by an
+   honesty statement: playbook ratings are editorial; per-event historical
+   sensitivity is "not yet measured" until a point-in-time event study exists;
+   the stock's 1-year beta vs SPY (real, computed evidence) is offered as the
+   only currently measurable relevance anchor.
+4. **Guardrails:** scenarios are conditional hypotheses, never predictions;
+   proxies are named as proxies (QQQ is a Nasdaq-100 ETF proxy); unverifiable
+   claims (earnings dates, short float, options positioning, institutional
+   flows) stay out until sourced; the FRED® attribution required by its API
+   terms is displayed in the workspace.
+
+### Reasoning
+
+The pedagogy of a good analyst briefing is separable from its unverifiable
+claims. Versioning the playbook like feature functions (ADR-008) and prompts
+(ADR-014) makes the editorial layer auditable and keeps persisted snapshots
+interpretable after content changes. Attaching assessments to statements
+(rather than encoding them as evidence) preserves the ADR-010/011 contract:
+trust levels keep measuring provenance, and nothing editorial can masquerade
+as data.
+
+### Consequences
+
+Any playbook content change requires a version bump. The manual research
+packet (ADR-014) deliberately excludes playbook context for now so the
+external model reasons over evidence alone; revisiting that is an open task.
+Measured per-event sensitivity requires future point-in-time event studies.
+The FRED key also unblocks FRED/ALFRED observations for the bitemporal macro
+backlog.
+
+---
+
 # Session Journal
 
 ---
@@ -1155,6 +1226,61 @@ Sunday prevents observation of live delay and current/incomplete-bar finalizatio
 ### Next Recommended Task
 
 During the next regular market session, sample Twelve Data once per minute, measure arrival delay and revisions, capture NBIS mismatch details, and either select the regular-session-only partial-venue feed or reject it.
+
+---
+
+## Session 013
+
+### Date
+
+2026-07-12
+
+### Goal
+
+C2-1b (FRED release dates, unblocked by the owner's new key) and the Catalyst
+Timeline product refinement (ADR-016).
+
+### Completed
+
+* Pre-task verification: authenticated against FRED, enumerated `/fred/releases`
+  live, confirmed release ids (10, 46, 50, 9, 53, 54, 91) and that
+  `/fred/release/dates` returns future scheduled dates (next CPI: 2026-07-14).
+* FRED connector with strict key hygiene: the key travels only as a request
+  param; recorded URLs, raw payloads, error messages, and logs never contain
+  it. Found and fixed httpx's INFO logging leaking full request URLs.
+* Fixed a real httpx pitfall: request-level `params` REPLACE the URL query
+  string rather than merging — the integration test caught it; the base
+  connector now merges explicitly.
+* `economic_release` calendar events (string column — no migration needed),
+  ingestion service with 24h staleness, scheduler job (only when the key is
+  configured), best-effort workspace ingestion.
+* Catalyst playbook v1.0.0 (10 event kinds) and `CatalystAssessment` attached
+  to statements; timeline engine with chronological ordering, beta relevance
+  framing, and honest gaps; frontend playbook cards labeled editorial, plus
+  the FRED® attribution footer.
+* Fixed pre-existing mojibake in the copy-packet button labels.
+* 83 backend tests green; ruff + strict mypy clean; frontend build clean.
+* Live-verified with NBIS: CPI 07-14, PPI 07-15, Beige Book 07-15, Retail
+  Sales 07-16, FOMC 07-29 with press conference, beta 3.19 framing — and
+  screenshot-verified the expanded playbook card.
+
+### Challenges
+
+The httpx params-replace-query behavior and the httpx URL logging were both
+silent key-leak traps; only the integration test and live container logs
+surfaced them. Lesson: for secret-bearing connectors, verify what is actually
+sent and what is actually logged, not just what the code intends.
+
+### Technical Debt
+
+None added. Two tracked follow-ups: point-in-time event studies for measured
+sensitivity; decide whether the manual packet should carry playbook context.
+
+### Next Recommended Task
+
+M1a weekday verification (Monday 2026-07-14 market session): Twelve Data live
+delay/current-bar finalization + NBIS 5m mismatch. Alternatively, FRED/ALFRED
+observations are now unblocked for the bitemporal macro backlog.
 
 ---
 

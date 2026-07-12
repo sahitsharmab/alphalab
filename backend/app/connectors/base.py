@@ -89,14 +89,27 @@ class BaseConnector(ABC):
         """Probe the external provider."""
 
     async def _get_text(
-        self, url: str, dataset: str, headers: dict[str, str] | None = None
+        self,
+        url: str,
+        dataset: str,
+        headers: dict[str, str] | None = None,
+        params: dict[str, str] | None = None,
     ) -> FetchResult:
-        """GET ``url`` with retries and wrap the body as a ``FetchResult``."""
+        """GET ``url`` with retries and wrap the body as a ``FetchResult``.
+
+        ``params`` are sent with the request but never appear in the
+        recorded/logged URL — use them for secrets such as API keys.
+        """
         provider = self.metadata().provider
+        # Merge explicitly: httpx request-level params would REPLACE the
+        # URL's own query string. Only the param-free ``url`` is recorded.
+        request_url = httpx.URL(url)
+        if params:
+            request_url = request_url.copy_merge_params(params)
         last_error = ""
         for attempt in range(1, self._max_attempts + 1):
             try:
-                response = await self._client.get(url, headers=headers)
+                response = await self._client.get(request_url, headers=headers)
             except httpx.TransportError as exc:
                 last_error = f"transport error: {exc}"
             else:

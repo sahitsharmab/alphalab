@@ -89,10 +89,11 @@ def _event(
     title: str,
     scheduled: date,
     time: str = "2:00 p.m.",
+    metadata: dict[str, object] | None = None,
 ) -> CalendarEventOut:
     return CalendarEventOut(
         id=event_id,
-        source_id="federal_reserve",
+        source_id="fred" if event_type is CalendarEventType.ECONOMIC_RELEASE else "federal_reserve",
         source_name="Federal Reserve",
         trust_level=10,
         event_type=event_type,
@@ -100,7 +101,19 @@ def _event(
         scheduled_on=scheduled,
         scheduled_time=time,
         url="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+        provider_metadata=metadata or {},
         retrieved_at=datetime.now(UTC),
+    )
+
+
+def _econ(event_id: int, kind: str, title: str, scheduled: date) -> CalendarEventOut:
+    return _event(
+        event_id,
+        CalendarEventType.ECONOMIC_RELEASE,
+        title,
+        scheduled,
+        time="",
+        metadata={"release_id": 10, "kind": kind},
     )
 
 
@@ -133,3 +146,68 @@ def test_catalysts_section_fomc_and_gaps() -> None:
 def test_catalysts_section_empty() -> None:
     section = build_catalysts_section([], date(2026, 7, 12))
     assert "No upcoming calendar events" in section.statements[0].text
+    # honest gap: no FRED events means the section says why
+    assert any("ALPHALAB_FRED_API_KEY" in s.text for s in section.statements)
+
+
+def test_timeline_economic_releases_carry_playbook_assessments() -> None:
+    today = date(2026, 7, 12)
+    events = [
+        _econ(1, "CPI", "Consumer Price Index (CPI)", date(2026, 7, 14)),
+        _econ(2, "PPI", "Producer Price Index (PPI)", date(2026, 7, 15)),
+        # beyond the 14-day horizon: excluded from the timeline
+        _econ(3, "GDP", "Gross Domestic Product (GDP)", date(2026, 8, 30)),
+    ]
+
+    section = build_catalysts_section(events, today)
+
+    cpi = next(s for s in section.statements if "Consumer Price Index" in s.text)
+    assert "2026-07-14 (in 2 days)" in cpi.text
+    assert "Playbook importance: very high" in cpi.text
+    assert cpi.assessment is not None
+    assert cpi.assessment.kind == "CPI"
+    assert cpi.assessment.playbook_version
+    assert cpi.assessment.transmission and cpi.assessment.watch
+    assert not any("Gross Domestic Product" in s.text for s in section.statements)
+    # no FRED gap complaint when economic releases are present
+    assert not any("ALPHALAB_FRED_API_KEY" in s.text for s in section.statements)
+
+
+def test_timeline_is_chronological_and_framed() -> None:
+    today = date(2026, 7, 12)
+    events = [
+        _event(1, CalendarEventType.FOMC_MEETING, "FOMC Meeting", date(2026, 7, 29)),
+        _econ(2, "PPI", "Producer Price Index (PPI)", date(2026, 7, 15)),
+        _econ(3, "CPI", "Consumer Price Index (CPI)", date(2026, 7, 14)),
+    ]
+
+    section = build_catalysts_section(
+        events, today, symbol="NBIS", beta_1y=2.1, beta_benchmark="SPY", beta_as_of="2026-07-10"
+    )
+
+    # framing first: playbook labeled editorial, sensitivity honestly unmeasured
+    framing = section.statements[0]
+    assert "editorial configuration, not measured evidence" in framing.text
+    assert "not yet measured" in framing.text
+    assert "beta vs SPY is 2.10" in framing.text
+    assert "amplified" in framing.text
+    assert framing.evidence_ids == ("beta_1y",)
+
+    ordered = [s.text.split(":")[0] for s in section.statements[1:4]]
+    assert ordered[0].startswith("Consumer Price Index")
+    assert ordered[1].startswith("Producer Price Index")
+    assert ordered[2].startswith("Next FOMC rate decision")
+    fomc = section.statements[3]
+    assert fomc.assessment is not None and fomc.assessment.kind == "FOMC_MEETING"
+
+
+def test_timeline_without_beta_stays_honest() -> None:
+    section = build_catalysts_section(
+        [_econ(1, "CPI", "Consumer Price Index (CPI)", date(2026, 7, 14))],
+        date(2026, 7, 12),
+        symbol="NBIS",
+    )
+    framing = section.statements[0]
+    assert "not yet measured" in framing.text
+    assert "beta" not in framing.text.lower()
+    assert framing.evidence_ids == ()

@@ -36,3 +36,7 @@ def configure_logging(level: str = "INFO", json_output: bool = False) -> None:
     )
 
     logging.basicConfig(level=numeric_level, stream=sys.stdout, format="%(message)s")
+    # httpx logs full request URLs at INFO, which would leak query-string
+    # secrets (e.g. the FRED api_key) into logs. Connectors already log
+    # redacted URLs; suppress httpx's own request lines.
+    logging.getLogger("httpx").setLevel(logging.WARNING)

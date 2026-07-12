@@ -75,6 +75,7 @@ class CalendarEventRepository:
                 scheduled_on=row.scheduled_on,
                 scheduled_time=row.scheduled_time,
                 url=row.url,
+                provider_metadata=row.provider_metadata,
                 retrieved_at=row.retrieved_at,
             )
             for row in rows
