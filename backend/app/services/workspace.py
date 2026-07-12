@@ -10,6 +10,7 @@ import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.engines.catalysts import build_catalysts_section
+from app.engines.changes import build_what_changed_section
 from app.engines.evidence import build_company_evidence_section
 from app.engines.inflation import build_macro_section
 from app.engines.relative import build_relative_section
@@ -21,6 +22,7 @@ from app.repositories.calendar import CalendarEventRepository
 from app.repositories.evidence import EvidenceRepository
 from app.repositories.macro import MacroObservationRepository
 from app.repositories.market import MarketBarRepository
+from app.repositories.research import WorkspaceSnapshotRepository
 from app.schemas.calendar import CalendarEventOut
 from app.schemas.evidence import EntityType, EvidenceRecordOut
 from app.schemas.market import MarketBarOut
@@ -54,6 +56,7 @@ class WorkspaceService:
         self._macro = MacroObservationRepository(session)
         self._evidence = EvidenceRepository(session)
         self._calendar = CalendarEventRepository(session)
+        self._snapshots = WorkspaceSnapshotRepository(session)
 
     async def build(self, symbol: str, force_refresh: bool = False) -> WorkspaceView:
         symbol = symbol.upper()
@@ -80,7 +83,7 @@ class WorkspaceService:
             bench_by_date = {b.bar_date: float(b.adj_close) for b in benchmark_bars}
             beta_1y = ft.beta(asset_by_date, bench_by_date, 252)
 
-        sections = [
+        base_sections = [
             build_technical_section(symbol, bars),
             build_historical_section(
                 symbol,
@@ -115,6 +118,11 @@ class WorkspaceService:
             price_date=last.bar_date,
             change_1d=(float(last.adj_close) / previous_close - 1 if previous_close else None),
         )
+        previous_view = await self._snapshots.latest(symbol)
+        sections = [
+            build_what_changed_section(quote, base_sections, previous_view),
+            *base_sections,
+        ]
 
         view = WorkspaceView(
             symbol=symbol,

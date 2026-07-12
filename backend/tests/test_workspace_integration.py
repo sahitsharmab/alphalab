@@ -153,6 +153,7 @@ async def test_workspace_end_to_end(workspace_client: httpx.AsyncClient) -> None
 
     sections = {s["id"]: s for s in body["sections"]}
     assert set(sections) == {
+        "changes",
         "technical",
         "historical",
         "relative",
@@ -212,6 +213,13 @@ async def test_workspace_snapshot_persisted(workspace_client: httpx.AsyncClient)
             .where(WorkspaceSnapshot.symbol == "MU")
         )
     assert count == 2  # research is permanent: every view is kept
+    second_sections = {section["id"]: section for section in second.json()["sections"]}
+    assert (
+        "previous workspace"
+        in " ".join(
+            statement["text"] for statement in second_sections["changes"]["statements"]
+        ).lower()
+    )
 
 
 async def test_manual_analysis_exports_latest_snapshot(workspace_client: httpx.AsyncClient) -> None:
