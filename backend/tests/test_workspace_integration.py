@@ -278,3 +278,26 @@ async def test_risk_plan_full_slice(workspace_client: httpx.AsyncClient) -> None
     latest = await workspace_client.get("/api/v1/risk-plans/MU/latest")
     assert latest.status_code == 200
     assert latest.json()["id"] == body["id"]
+
+
+async def test_watchlist_full_slice(workspace_client: httpx.AsyncClient) -> None:
+    built = await workspace_client.get("/api/v1/workspace/MU")
+    assert built.status_code == 200
+
+    added = await workspace_client.post(
+        "/api/v1/watchlist", json={"symbol": "MU", "note": "Memory cycle"}
+    )
+    assert added.status_code == 200
+    assert added.json()["symbol"] == "MU"
+
+    overview = await workspace_client.get("/api/v1/watchlist/overview")
+    assert overview.status_code == 200
+    row = overview.json()[0]
+    assert row["symbol"] == "MU"
+    assert row["ema9_distance"] is not None
+    assert row["relative_1m_spy"] is not None
+    assert row["relative_1m_qqq"] is not None
+
+    removed = await workspace_client.delete("/api/v1/watchlist/MU")
+    assert removed.status_code == 204
+    assert (await workspace_client.get("/api/v1/watchlist")).json() == []

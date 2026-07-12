@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import LineChart, { ChartPoint } from "@/components/LineChart";
 import StatTile from "@/components/StatTile";
@@ -217,6 +218,9 @@ export default function DashboardPage() {
           </p>
         </div>
         <TickerSearch autoFocus />
+        <Link href="/watchlist" style={{ color: theme.inkSecondary, fontSize: 12 }}>
+          Open watchlist
+        </Link>
         {health && (
           <span style={{ fontSize: 12, color: theme.inkMuted }}>
             <span

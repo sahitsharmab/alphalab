@@ -10,6 +10,7 @@ from app.models.macro import MacroObservation, MacroSeries, RawPayload
 from app.models.market import Instrument, MarketBar
 from app.models.research import WorkspaceSnapshot
 from app.models.risk import RiskPlan
+from app.models.watchlist import WatchlistItem
 
 __all__ = [
     "CalendarEvent",
@@ -21,5 +22,6 @@ __all__ = [
     "MarketBar",
     "RawPayload",
     "RiskPlan",
+    "WatchlistItem",
     "WorkspaceSnapshot",
 ]

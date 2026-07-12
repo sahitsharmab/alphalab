@@ -167,6 +167,46 @@ export function createRiskPlan(requestBody: RiskPlanRequest): Promise<RiskPlanAs
   });
 }
 
+export interface WatchlistItem {
+  symbol: string;
+  note: string;
+  added_at: string;
+}
+
+export interface WatchlistOverviewRow {
+  symbol: string;
+  name: string;
+  price: number;
+  price_date: string;
+  change_1d: number | null;
+  return_1w: number | null;
+  return_1m: number | null;
+  ema9_distance: number | null;
+  ema21_distance: number | null;
+  relative_1m_spy: number | null;
+  relative_1m_qqq: number | null;
+  note: string;
+}
+
+export function getWatchlistOverview(): Promise<WatchlistOverviewRow[]> {
+  return request<WatchlistOverviewRow[]>("/api/v1/watchlist/overview");
+}
+
+export function addWatchlistItem(symbol: string, note = ""): Promise<WatchlistItem> {
+  return request<WatchlistItem>("/api/v1/watchlist", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ symbol, note }),
+  });
+}
+
+export async function removeWatchlistItem(symbol: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/watchlist/${encodeURIComponent(symbol)}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) throw new Error(`API ${response.status}: ${await response.text()}`);
+}
+
 export interface Health {
   status: "ok" | "degraded";
   environment: string;

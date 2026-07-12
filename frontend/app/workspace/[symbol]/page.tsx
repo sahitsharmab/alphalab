@@ -7,7 +7,7 @@ import EvidenceSectionCard from "@/components/EvidenceSection";
 import LineChart, { ChartPoint } from "@/components/LineChart";
 import RiskPlanner from "@/components/RiskPlanner";
 import TickerSearch from "@/components/TickerSearch";
-import { getManualAnalysisPacket, getWorkspace, WorkspaceView } from "@/lib/api";
+import { addWatchlistItem, getManualAnalysisPacket, getWorkspace, WorkspaceView } from "@/lib/api";
 import { theme } from "@/lib/theme";
 
 export default function WorkspacePage() {
@@ -20,6 +20,7 @@ export default function WorkspacePage() {
   const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "copied" | "error">(
     "idle",
   );
+  const [watchlistStatus, setWatchlistStatus] = useState<"idle" | "adding" | "added" | "error">("idle");
 
   const load = useCallback(
     async (refresh: boolean) => {
@@ -110,11 +111,34 @@ export default function WorkspacePage() {
             {view.exchange} · as of {view.quote.price_date}
           </span>
           <button
+            onClick={async () => {
+              setWatchlistStatus("adding");
+              try {
+                await addWatchlistItem(symbol);
+                setWatchlistStatus("added");
+              } catch {
+                setWatchlistStatus("error");
+              }
+            }}
+            disabled={watchlistStatus === "adding"}
+            style={{
+              marginLeft: "auto",
+              background: theme.surface,
+              color: watchlistStatus === "error" ? theme.statusCritical : theme.inkSecondary,
+              border: `1px solid ${theme.border}`,
+              borderRadius: 8,
+              padding: "5px 11px",
+              fontSize: 12,
+              cursor: watchlistStatus === "adding" ? "wait" : "pointer",
+            }}
+          >
+            {watchlistStatus === "adding" ? "Adding…" : watchlistStatus === "added" ? "On watchlist" : "Add to watchlist"}
+          </button>
+          <button
             onClick={() => void copyAnalysisPacket()}
             disabled={copyStatus === "copying"}
             title="Copy the structured workspace and source links for analysis in ChatGPT or Claude"
             style={{
-              marginLeft: "auto",
               background: theme.surface,
               color: copyStatus === "error" ? theme.statusCritical : theme.inkSecondary,
               border: `1px solid ${theme.border}`,
