@@ -37,7 +37,7 @@ The original phases below remain the long-term map; the MVP re-sequences their c
 
 ### Sprint M1 — Intraday Market Foundation
 
-* [ ] M1a. Verify free intraday sources for NBIS/SPY/QQQ across premarket, regular, and after-hours; scorecard started 2026-07-12 but **blocked** on weekday live-session observation and free Alpaca credentials (`M1A_PROVIDER_SCORECARD.md`)
+* [ ] M1a. Verify free intraday sources for NBIS/SPY/QQQ across premarket, regular, and after-hours; Twelve Data Basic is the leading candidate but **blocked** on weekday delay/current-bar verification and NBIS 1m→5m mismatch investigation (`M1A_PROVIDER_SCORECARD.md`)
 * [ ] M1b. Canonical bitemporal one-minute storage with meaningful-change revisions and immutable raw references
 * [ ] M1c. Deterministic five-minute aggregation; exchange-calendar session segmentation; previous-day, premarket, and configurable opening-range levels; feed-scoped VWAP
 * [ ] M1d. Independent intraday bars/session APIs with freshness, delay, completed-bar, missing-bar, and coverage metadata

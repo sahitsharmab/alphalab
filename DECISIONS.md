@@ -1130,6 +1130,34 @@ Create a free Alpaca Basic account, configure its key and secret locally, and re
 
 ---
 
+## Session 012
+
+### Date
+
+2026-07-12
+
+### Goal
+
+Continue M1a with newly configured Twelve Data Basic credentials and proceed into M1b only if all provider gates pass.
+
+### Completed
+
+* Verified the key without exposing it and authenticated successfully against Twelve Data.
+* Confirmed that Basic rejects premarket/after-hours access with HTTP 403; no paid upgrade was introduced.
+* Verified 5,000 regular-session 1m bars for each of NBIS, SPY, and QQQ across 13 trading days.
+* Verified full 390-minute sessions, no missing/duplicate regular timestamps, no zero-volume regular bars, consistent New York timestamps, and immediate NBIS response repeatability.
+* Reconciled derived/provider-native 5m bars exactly for SPY and QQQ.
+
+### Blocker
+
+Sunday prevents observation of live delay and current/incomplete-bar finalization. NBIS also produced 10 native 5m bars that differed from deterministic aggregation of the 1m response; details must be captured after the Basic credit window resets. Twelve Data is not selected and M1b was not started.
+
+### Next Recommended Task
+
+During the next regular market session, sample Twelve Data once per minute, measure arrival delay and revisions, capture NBIS mismatch details, and either select the regular-session-only partial-venue feed or reject it.
+
+---
+
 # Open Questions
 
 Questions that have not yet been answered.

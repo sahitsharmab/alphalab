@@ -1,11 +1,11 @@
 # Sprint M1a Intraday Provider Scorecard
 
 Date: 2026-07-12  
-Status: **Blocked — no provider selected; M1b not started**
+Status: **Blocked — Twelve Data is the leading candidate, but no provider is selected; M1b not started**
 
 ## Verification Boundary
 
-This pre-task was run on a Sunday. Historical responses could be tested, but live premarket, regular-session, and after-hours observation delay could not be measured. No Alpaca, Massive/Polygon, or Alpha Vantage credentials were present in the local environment. Authentication failures are not provider failures; they are unverified acceptance criteria.
+This pre-task was run on a Sunday. Historical responses could be tested, but live premarket, regular-session, and after-hours observation delay could not be measured. No Alpaca or Massive/Polygon credentials were present. A Twelve Data Basic key was subsequently configured and tested. Authentication failures are not provider failures; they are unverified acceptance criteria.
 
 Legend: **D** documented, **E** empirically observed on 2026-07-12, **U** unverified.
 
@@ -58,15 +58,55 @@ Provider-native regular-session 5m bars reconciled exactly with deterministic ag
 
 The independent reference timestamp was 2026-07-11 00:15 UTC. This supports price plausibility, not exact feed equivalence.
 
+## Twelve Data Basic Empirical Results
+
+The configured free Basic key authenticated successfully.
+
+| Criterion | Twelve Data Basic |
+|---|---|
+| API stability | D: supported REST contract; E: authenticated responses stable during probe |
+| Authentication | E: free API key works; no brokerage funding or paid entitlement used |
+| Free restrictions | D/E: 8 credits/minute, 800/day; pre/post rejected as paid-only |
+| Observation delay | U: Sunday; must measure live |
+| Premarket coverage | E: unavailable on Basic (HTTP 403) |
+| Regular coverage | E: complete recent sessions for all three symbols |
+| After-hours coverage | E: unavailable on Basic (HTTP 403) |
+| One-minute bars | E: available for NBIS, SPY, QQQ |
+| Historical depth | E: at least 5,000 rows / 13 sessions in one response; deeper Basic depth not yet measured |
+| Missing bars | E: zero missing regular minutes in tested full sessions |
+| Timestamp consistency | E: minute-aligned `America/New_York`, 09:30–15:59 ET |
+| Revisions/corrections | E: immediate closed-session repeat identical; U live corrections/finalization |
+| Price coverage | D: partial-venue default feed; E: values identical to Yahoo regular feed in tested window |
+| Volume coverage | D: approximately 5% venue coverage; must never be labelled total market volume |
+| Trade count | E: absent from tested time-series response |
+| VWAP | E: absent from tested time-series response; derivable only as partial-venue VWAP |
+| Rate limits | D/E: 8/minute and 800/day; limit encountered during extended verification |
+| Licensing/usage risk | D: Basic supports personal/internal non-commercial use |
+| Long-term maintainability | Medium/high documented API; limited free quota and partial feed are lasting constraints |
+| NBIS suitability | Partial: regular bars complete; 10 native-vs-derived 5m mismatches unresolved |
+| SPY suitability | Partial: regular bars complete and reconciliation exact; live delay unknown |
+| QQQ suitability | Partial: regular bars complete and reconciliation exact; live delay unknown |
+
+* `prepost=true` returned HTTP 403 for NBIS, SPY, and QQQ with an explicit message that pre/post data requires Pro or Venture. Extended-hours data is therefore unavailable on the free plan.
+* Regular-session `1min` requests returned 5,000 rows per symbol spanning 13 trading days (2026-06-23 through 2026-07-10).
+* The last two full sessions contained exactly 390 bars per symbol, with no duplicate timestamps, no missing regular minutes, and no zero-volume bars.
+* Timestamps were consistently in `America/New_York`, from 09:30 through 15:59 ET.
+* Immediate repeated NBIS 1m responses were identical.
+* Twelve Data's 2026-07-10 1m values matched Yahoo's regular-session values, including volume. This is consistent with Twelve Data's documented partial-venue US feed and does not establish consolidated coverage.
+* Derived versus provider-native 5m reconciliation: SPY 78/78 exact; QQQ 78/78 exact; NBIS had 10 mismatching bars. The mismatch details could not be retrieved immediately because the Basic per-minute credit limit was reached. This must be resolved before provider selection.
+
+Twelve Data Basic is technically viable for regular-session-only charting, but its documented feed represents approximately 5% of total US trading volume. Any future UI would need terminology such as **Twelve Data partial-venue price**, **partial-venue volume**, and **partial-venue VWAP**. It cannot provide free premarket or after-hours context.
+
 ## Decision
 
 No provider satisfies every M1a acceptance criterion yet.
 
-* **Alpaca Basic / IEX:** leading candidate, blocked on free credentials and a live-session test. NBIS IEX sparsity, volume coverage, completed-bar latency, and extended-hours usefulness remain unknown.
+* **Twelve Data Basic:** leading currently testable candidate for regular-session-only M1. Blocked on weekday live delay/current-bar verification and NBIS 1m-to-5m mismatch investigation. Free pre/post coverage is definitively unavailable.
+* **Alpaca Basic / IEX:** still unverified because free credentials require pending identity approval. NBIS IEX sparsity, volume coverage, completed-bar latency, and extended-hours usefulness remain unknown.
 * **Yahoo intraday:** passes recent regular-session continuity and 1m-to-5m reconciliation. It fails selection today because live delay and incomplete-bar behavior were not measurable, extended-hours volume is unusable, and the endpoint has no supported contract/licensing assurance.
 * **Massive Basic:** rejected as M1 primary because the free plan is end-of-day. It remains a possible historical validation source.
 
-M1b must not start until a weekday run observes premarket, regular, and after-hours behavior and free Alpaca credentials are available.
+M1b must not start until a weekday run measures Twelve Data delay and current-bar finalization, and the NBIS aggregation mismatch is understood. If regular-session-only scope is accepted after verification, missing pre/post data must be prominent rather than silently omitted.
 
 ## Official Documentation Reviewed
 
@@ -75,3 +115,5 @@ M1b must not start until a weekday run observes premarket, regular, and after-ho
 * [Massive stock aggregates](https://massive.com/docs/rest/stocks/aggregates/custom-bars)
 * [Massive stock API overview](https://massive.com/docs/rest/stocks)
 * [Alpha Vantage intraday documentation](https://www.alphavantage.co/documentation/)
+* [Twelve Data pricing and Basic limits](https://twelvedata.com/pricing)
+* [Twelve Data US feed coverage](https://support.twelvedata.com/en/articles/9935903-us-equities-market-data)

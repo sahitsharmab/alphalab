@@ -30,7 +30,7 @@ Everything below is implemented, tested, verified live, and green in CI:
 
 ## What Is NOT Built Yet (next work, in order)
 
-1. **M1a provider verification:** resume on a weekday with a free Alpaca Basic key/secret. Observe NBIS/SPY/QQQ during premarket, regular hours, and after-hours; measure delay and IEX coverage. Do not start M1b until a provider passes.
+1. **M1a provider verification:** Twelve Data Basic credentials are configured. Resume on a weekday to measure regular-session delay/current-bar finalization and investigate NBIS's 10 mismatching native-vs-derived 5m bars. Basic pre/post access is paid-only and rejected. Do not start M1b until a provider passes.
 2. **Sprint B automated synthesis:** deliberately deferred while the manual packet is used.
 3. **C2-1b:** needs the owner's free FRED key.
 4. Deferred: ticker-scoped scheduling, full filing text, Treasury, and expanded market-context feeds.
