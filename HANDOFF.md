@@ -12,7 +12,7 @@ the project documents in this order:
 
 ---
 
-## Current State (2026-07-12, deterministic daily decision tools shipped; M1a still blocked on a weekday run)
+## Current State (2026-07-13, M1a resolved — Twelve Data selected; M1b is the next build)
 
 Everything below is implemented, tested, verified live, and green in CI:
 
@@ -34,7 +34,7 @@ Everything below is implemented, tested, verified live, and green in CI:
 
 ## What Is NOT Built Yet (next work, in order)
 
-1. **M1a provider verification:** Twelve Data Basic credentials are configured. Resume on a weekday to measure regular-session delay/current-bar finalization and investigate NBIS's 10 mismatching native-vs-derived 5m bars. Basic pre/post access is paid-only and rejected. Do not start M1b until a provider passes.
+1. **M1b — canonical bitemporal 1-minute storage (NEXT BUILD; unblocked 2026-07-13).** M1a is done: Twelve Data Basic is the selected provider (see `M1A_PROVIDER_SCORECARD.md` weekday verification — ~44s delay, no revisions, exact 5m aggregation). Build a Twelve Data connector + `intraday_bars` bitemporal storage. **Hard constraints:** regular session ONLY (no free pre/post — the intraday view must prominently disclose the premarket/after-hours gap), partial-venue labeling (~5% of volume; never "consolidated"), completed-bars-only (~1-min staleness), 8-credit/min + 800/day budget. Then M1c (5m aggregation, session levels, VWAP), M1d (APIs), M1e (session chart).
 2. **M2b intraday remainder:** session structure and time-adjusted relative volume depend on M1; sector/peer context depends on sector mapping plus an explicit peer universe.
 3. **Sprint B automated synthesis:** deliberately deferred while the manual packet is used.
 4. **FRED/ALFRED observations** (rates, macro series with vintages — validates ADR-004): now unblocked, the key is configured.

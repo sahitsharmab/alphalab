@@ -97,16 +97,46 @@ The configured free Basic key authenticated successfully.
 
 Twelve Data Basic is technically viable for regular-session-only charting, but its documented feed represents approximately 5% of total US trading volume. Any future UI would need terminology such as **Twelve Data partial-venue price**, **partial-venue volume**, and **partial-venue VWAP**. It cannot provide free premarket or after-hours context.
 
-## Decision
+## Weekday Live Verification — 2026-07-13 (RESOLVED)
 
-No provider satisfies every M1a acceptance criterion yet.
+Ran `backend/scripts/m1a_probe.py` for 90 minutes from the 09:30 ET open
+(NBIS/SPY/QQQ, 1m polled every 60s, native 5m every 5th cycle). Full results
+in `backend/scripts/m1a_results/`. Every open question from the Sunday run is
+now answered:
 
-* **Twelve Data Basic:** leading currently testable candidate for regular-session-only M1. Blocked on weekday live delay/current-bar verification and NBIS 1m-to-5m mismatch investigation. Free pre/post coverage is definitively unavailable.
-* **Alpaca Basic / IEX:** still unverified because free credentials require pending identity approval. NBIS IEX sparsity, volume coverage, completed-bar latency, and extended-hours usefulness remain unknown.
-* **Yahoo intraday:** passes recent regular-session continuity and 1m-to-5m reconciliation. It fails selection today because live delay and incomplete-bar behavior were not measurable, extended-hours volume is unusable, and the endpoint has no supported contract/licensing assurance.
-* **Massive Basic:** rejected as M1 primary because the free plan is end-of-day. It remains a possible historical validation source.
+| Criterion | Result |
+|---|---|
+| **Appearance delay** | Completed 1m bars reliably available **~44s after the minute closes** (NBIS 44.0s / SPY 44.1s / QQQ 44.2s median; range 43.9–44.6s over 88 samples each). This is an **upper bound** — polls landed at :44 past each minute, so the true delay is ≤44s. Never once slower than one poll cycle. |
+| **Current/in-progress bars** | **Never served** (0/90 polls returned an in-progress minute). Twelve Data returns only *completed* bars — so there is no partial-bar ambiguity, but the freshest datum is always the last closed minute (~44–104s old depending on position in the current minute). |
+| **Revisions** | **Zero.** No completed bar changed after first appearance across 270 symbol-polls. Completed bars are immutable within the session → clean for bitemporal storage. |
+| **NBIS 5m native-vs-derived** | **0 mismatches across 19 fully-covered windows.** Native 5m bars reconcile exactly with deterministic aggregation of the 1m series. The Sunday 10-bar mismatch was a stale/weekend-data artifact, not a live-data problem. |
+| **Reliability** | 90/90 cycles, **0 errors**, comfortably inside the 8-credit/min budget. |
 
-M1b must not start until a weekday run measures Twelve Data delay and current-bar finalization, and the NBIS aggregation mismatch is understood. If regular-session-only scope is accepted after verification, missing pre/post data must be prominent rather than silently omitted.
+## Decision — SELECTED (regular-session only, with mandatory labeling)
+
+**Twelve Data Basic is selected as the M1 intraday provider** for the
+regular session. It passes every measurable acceptance criterion: fast
+(≤44s), stable, no revisions, exact 5m aggregation, reliable within budget.
+
+Non-negotiable constraints that M1b–M1e MUST honor (ADR-015 disclosure rule):
+
+* **Regular session only.** Pre/post is paid-only (403 confirmed again
+  2026-07-13). The intraday view MUST prominently disclose that premarket and
+  after-hours are not covered — proven material the same morning, when SOFI
+  was +3% premarket and AlphaLab was blind to it.
+* **Partial-venue labeling.** ~5% of US volume; price/volume/VWAP must be
+  labeled "partial-venue," never "consolidated real-time."
+* **~1-minute staleness.** Only completed bars; the UI must never imply a live
+  tick.
+* **Credit budget.** 8/min, 800/day — bounds symbols × poll frequency; a large
+  watchlist cannot poll every symbol every minute.
+
+Other providers remain as future options: **Alpaca Basic/IEX** (unverified,
+would add a second venue for cross-checking), **Yahoo intraday** (good
+regular-session continuity, unsupported contract), **Massive** (end-of-day
+only, historical validator).
+
+**M1b (canonical bitemporal 1-minute storage) is now unblocked.**
 
 ## Official Documentation Reviewed
 

@@ -830,6 +830,68 @@ Two new persisted user-state tables (`risk_plans`, `watchlist_items`) require Al
 
 ---
 
+## ADR-018
+
+### Title
+
+Twelve Data Basic as the Regular-Session Intraday Provider
+
+### Date
+
+2026-07-13
+
+### Status
+
+Accepted
+
+### Context
+
+M1 (Intraday Execution Context, ADR-015) was gated on an empirical provider
+verification (M1a). The Sunday pre-task could not measure live behavior and
+left three questions open: arrival delay, current-bar finalization, and an
+unexplained 10-bar NBIS native-vs-derived 5m mismatch. A weekday live probe
+(`backend/scripts/m1a_probe.py`, 90 minutes from the 2026-07-13 open) answered
+all three (`M1A_PROVIDER_SCORECARD.md`).
+
+### Decision
+
+Select **Twelve Data Basic** as the M1 intraday provider for the regular
+session. Measured results: completed 1-minute bars appear ≤44s after the
+minute closes (never slower than one poll cycle across 264 samples); only
+completed bars are served (no in-progress ambiguity); zero revisions to
+finalized bars; native 5m bars reconcile exactly with deterministic 1m
+aggregation (0 mismatches / 19 windows — the Sunday discrepancy was a
+weekend-data artifact); zero errors within the 8-credit/minute budget.
+
+The selection is bound by four constraints that M1b–M1e MUST honor:
+
+1. **Regular session only** — free pre/post is unavailable (403). The intraday
+   view must *prominently disclose* that premarket/after-hours are not covered.
+2. **Partial-venue labeling** — the feed is ~5% of US volume; price, volume,
+   and VWAP must be labeled "partial-venue," never "consolidated real-time."
+3. **Completed-bars-only staleness** — the freshest datum is the last closed
+   minute; the UI must not imply a live tick.
+4. **Credit budget** — 8/min, 800/day bounds symbols × poll frequency.
+
+### Reasoning
+
+The provider meets every measurable acceptance criterion for a 1-5 day
+momentum decision aid, where a ≤44s delay and completed-bar cleanliness are
+more than sufficient. Immutable completed bars fit the bitemporal model
+(ADR-004) without revision churn. The regular-session and partial-venue limits
+are real but are honestly disclosed rather than hidden, per ADR-015 — and the
+alternative (paid data) is out of scope for v0.1's free-sources rule (ADR-011).
+
+### Consequences
+
+M1b (canonical bitemporal 1-minute storage) is unblocked and is the next
+build. The premarket blindspot is now a known, disclosed limitation — the
+same morning proved its cost (SOFI +3% premarket, invisible to AlphaLab).
+Alpaca/IEX remains a future option for a second venue to cross-check the
+partial-venue feed. Nothing about deterministic daily (M2a) features changes.
+
+---
+
 # Session Journal
 
 ---
@@ -1404,6 +1466,59 @@ event-coverage gaps the owner identified against a real analyst weekly brief.
 
 Monday (2026-07-13): start `m1a_probe.py` ~09:25 ET, analyze results into a
 scorecard verdict; owner trades through the workspace and logs friction.
+
+---
+
+## Session 016
+
+### Date
+
+2026-07-13
+
+### Goal
+
+Support the owner's first live trading day and run M1a during regular market
+hours.
+
+### Completed
+
+* **M1a resolved → ADR-018.** Ran the 90-minute weekday probe from the open;
+  Twelve Data Basic passed every measurable criterion (≤44s delay, no
+  in-progress bars, zero revisions, exact 5m aggregation, 0 errors). Selected
+  as the regular-session intraday provider with four disclosure constraints.
+  Updated the scorecard, TASKS, HANDOFF. M1b is unblocked.
+* Live decision support on four names the owner raised (real money): verified
+  the KOSPI crash cause (SK Hynix + Hormuz + Korea-local fragility) and its
+  partial/dampened transmission to US names; built KTOS, SOFI, NBIS workspaces
+  on demand; used the evidence to separate narrative from setup (KTOS
+  falling-knife despite the war narrative; SOFI the only constructive setup).
+* Explained beta methodology (OLS slope, its caveats) when asked.
+* Built two persisted SOFI risk plans (tight vs wide stop) showing the
+  size/whipsaw trade-off, armed for a post-CPI 200-EMA-reclaim entry.
+
+### Calibration Note
+
+My 08:06 ET NBIS gap-down prediction (−3% to −6%) did not hold — the risk-off
+open faded by ~09:00 and the group traded green premarket. Owned it to the
+owner. Lesson reinforced: premarket is fast-moving and un-modelable, and
+AlphaLab is blind to it (Twelve Data free = no pre/post) — exactly the M1
+limitation ADR-018 requires disclosing.
+
+### Discovered Product Gaps (backlog)
+
+* **Risk Planner catalyst warning is date-sorted and truncated to 3**, so it
+  surfaced trivial same-day Fed stat releases and buried tomorrow's CPI. Should
+  rank by playbook importance, not date.
+* **Premarket blindspot** (M1 regular-session-only) is a real limitation the
+  owner hit on day one; consider a disclosed premarket source later.
+* Earnings dates still unverified in-product (SOFI's ~July 29 came from the
+  owner's broker, not AlphaLab) — the standing C2-2 gap.
+
+### Next Recommended Task
+
+M1b — Twelve Data connector + bitemporal `intraday_bars` storage, honoring the
+ADR-018 constraints. Separately, the Risk Planner catalyst-warning fix is a
+quick, high-value win.
 
 ---
 
