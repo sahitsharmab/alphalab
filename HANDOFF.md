@@ -7,7 +7,7 @@ the project documents in this order:
 1. AGENTS.md — your role, rules, and workflow
 2. PROJECT.md — vision and philosophy (note "The Evidence Engine" and the v0.1 MVP section)
 3. ARCHITECTURE.md — layers and dependency rules
-4. DECISIONS.md — ADR-001..017 and the session journal (read the ADRs; skim the journal)
+4. DECISIONS.md — ADR-001..019 and the session journal (read the ADRs; skim the journal)
 5. TASKS.md — the backlog; the "MVP Roadmap" section is the current plan
 
 ---
@@ -28,7 +28,8 @@ Everything below is implemented, tested, verified live, and green in CI:
 * **M2a daily momentum and relative context** — the technical read includes 9/21-day EMA distances and 1/5-day momentum. A deterministic Relative Context section compares the selected stock with SPY and QQQ (explicit ETF proxies) over 1-week/1-month/3-month windows. A What Changed section compares the current build with the immediately prior persisted workspace snapshot, including price/RSI/EMA movement and new evidence/catalysts.
 * **M3 Risk Planner** — user-supplied account size, entry, invalidation, target, and dollar-risk cap produce deterministic long/short sizing, risk/reward, ATR/drawdown context, catalyst warnings, and persisted assessments. AlphaLab never chooses the invalidation and labels maximum size as a constraint, not a recommendation.
 * **User-curated watchlist** — persisted symbols and notes feed a deterministic overview of daily returns, EMA distances, and SPY/QQQ-relative context. It does not rank, score, or discover securities.
-* 91 backend tests (unit + integration against real TimescaleDB), ruff + mypy `--strict` clean; frontend production build clean.
+* **Decision Board (ADR-019)** — `GET /api/v1/watchlist/board` + `/board` page: each watchlist name as role (beta band) + support/resistance bracket (nearest EMAs around price) + momentum + relative strength + next market catalyst + risk-plan flag, sorted as a beta risk gradient. Deterministic **Layer 1** of the reporting stack; the scenario-reasoning **Layer 2** (Morning Brief — "which name fits which outcome") is Sprint B, gated on the LLM key. `app/engines/decision_board.py` holds the pure role/bracket helpers.
+* 97 backend tests (unit + integration against real TimescaleDB), ruff + mypy `--strict` clean; frontend production build clean.
 
 **Repo:** https://github.com/sahitsharmab/alphalab — solo dev, direct commits to `main`, CI is the gate (no PRs). Commit messages must NEVER contain AI attribution lines (AGENTS.md rule).
 

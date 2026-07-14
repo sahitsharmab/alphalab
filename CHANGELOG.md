@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Decision Board (`/board`): a single scannable page that turns your watchlist into decision-ready rows — each name's role (auto-derived from beta: Hedge / Defensive / Core / High-beta / Very high-beta), its nearest support and resistance (the EMAs just below and above the last close), momentum, relative strength versus SPY, whether it has a saved risk plan, and the next market catalyst across the top. Deterministic facts only; it never tells you which level "fires" — that judgment stays with you (and, later, the AI layer).
+
 - Catalyst Timeline now also tracks the Empire State (NY Fed) and Philadelphia Fed manufacturing surveys, with playbook context; the UMich sentiment playbook card now explains that only the scheduled final release has a free schedule source (the preliminary mid-month reading does not).
 
 - Daily momentum and relative context: Technical Overview now includes 9/21-day EMA distances and 1/5-day momentum; a new evidence-backed section compares the stock with SPY and QQQ (explicit ETF proxies) across 1-week, 1-month, and 3-month windows.

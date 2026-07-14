@@ -119,6 +119,7 @@ Deliverable shipped: the catalysts section becomes a chronological **Catalyst Ti
 Deliverable: workspace gains Executive Summary, Bull Case, Bear Case, Risk Assessment, Confidence (labeled as model self-assessment), and "Questions to ask before investing."
 
 * [x] B-manual. Manual AI research packet (ADR-014): one-click copy of a versioned analysis prompt containing structured workspace statements, namespaced evidence citations, trust levels, and source URLs; no API key or LLM call (2026-07-12)
+* [x] B-board. Decision Board (ADR-019, 2026-07-14) — deterministic Layer 1 of the reporting stack: `GET /api/v1/watchlist/board` + `/board` page composing each watchlist name's role (beta band), support/resistance bracket (nearest EMAs around price), momentum, relative strength, next market catalyst, and risk-plan presence. Facts only — the scenario-reasoning layer ("which name fits which CPI outcome") is B1/B2, gated on the LLM key.
 * [ ] B0. Decide default LLM provider/model (open question → ADR); owner supplies API key
 * [ ] B1. LLM Gateway (ADR-006): provider-agnostic, logged, cached, versioned prompts, structured outputs only
 * [ ] B2. Workspace synthesizer: LLM reasons ONLY over structured evidence (Sprint A numbers + Sprint C records); every claim cites evidence with source + trust level

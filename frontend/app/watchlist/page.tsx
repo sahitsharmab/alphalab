@@ -52,9 +52,14 @@ export default function WatchlistPage() {
     <main style={{ maxWidth: 1100, margin: "0 auto", padding: "2.5rem 1.5rem" }}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
         <div>
-          <Link href="/" style={{ color: theme.inkMuted, textDecoration: "none", fontSize: 12 }}>
-            ← AlphaLab
-          </Link>
+          <div style={{ display: "flex", gap: 14, alignItems: "baseline" }}>
+            <Link href="/" style={{ color: theme.inkMuted, textDecoration: "none", fontSize: 12 }}>
+              ← AlphaLab
+            </Link>
+            <Link href="/board" style={{ color: theme.seriesYoy, textDecoration: "none", fontSize: 12 }}>
+              Decision Board →
+            </Link>
+          </div>
           <h1 style={{ margin: "6px 0 0", fontSize: "1.5rem" }}>Momentum Watchlist</h1>
           <p style={{ color: theme.inkMuted, fontSize: 12, margin: "4px 0 0" }}>
             User-selected symbols only · deterministic daily context · no opaque ranking score

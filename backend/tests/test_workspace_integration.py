@@ -242,6 +242,36 @@ async def test_manual_analysis_requires_existing_snapshot(
     assert response.status_code == 404
 
 
+async def test_decision_board_composes_watchlist(workspace_client: httpx.AsyncClient) -> None:
+    # Build the workspace so MU's instrument + bars (and SPY) exist, then track it.
+    assert (await workspace_client.get("/api/v1/workspace/MU")).status_code == 200
+    add = await workspace_client.post("/api/v1/watchlist", json={"symbol": "MU", "note": "n"})
+    assert add.status_code == 200
+
+    resp = await workspace_client.get("/api/v1/watchlist/board")
+    assert resp.status_code == 200
+    board = resp.json()
+    assert isinstance(board["rows"], list) and board["rows"]
+
+    row = next(r for r in board["rows"] if r["symbol"] == "MU")
+    assert row["name"] == "Micron Technology, Inc."
+    assert row["role"] in {
+        "Hedge",
+        "Defensive",
+        "Core",
+        "High-beta",
+        "Very high-beta",
+        "Unclassified",
+    }
+    # MU's synthetic series rises monotonically → price above every EMA →
+    # nearest support exists, no resistance overhead.
+    assert row["support"] is not None
+    assert row["resistance"] is None
+    assert row["has_risk_plan"] is False
+    # The catalyst comes from the mock Fed calendar (FOMC 2099) when present.
+    assert board["next_catalyst"] is None or "20" in board["next_catalyst"]
+
+
 async def test_unknown_symbol_is_404(workspace_client: httpx.AsyncClient) -> None:
     response = await workspace_client.get("/api/v1/workspace/NOPE")
     assert response.status_code == 404

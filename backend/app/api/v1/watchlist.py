@@ -6,7 +6,12 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_session
-from app.schemas.watchlist import WatchlistAddRequest, WatchlistItemOut, WatchlistOverviewRow
+from app.schemas.watchlist import (
+    DecisionBoard,
+    WatchlistAddRequest,
+    WatchlistItemOut,
+    WatchlistOverviewRow,
+)
 from app.services.watchlist import WatchlistError, WatchlistService
 
 router = APIRouter(prefix="/watchlist")
@@ -37,3 +42,9 @@ async def remove_watchlist_item(symbol: str, session: SessionDep) -> Response:
 @router.get("/overview")
 async def watchlist_overview(session: SessionDep) -> list[WatchlistOverviewRow]:
     return await WatchlistService(session).overview()
+
+
+@router.get("/board")
+async def decision_board(session: SessionDep) -> DecisionBoard:
+    """The Decision Board: each watchlist name as role + level bracket + context."""
+    return await WatchlistService(session).board()

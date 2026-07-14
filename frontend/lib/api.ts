@@ -207,6 +207,41 @@ export async function removeWatchlistItem(symbol: string): Promise<void> {
   if (!response.ok) throw new Error(`API ${response.status}: ${await response.text()}`);
 }
 
+// --- Decision Board (deterministic Layer 1) ---
+
+export interface BoardLevel {
+  label: string;
+  value: number;
+  distance: number; // signed fraction from price
+}
+
+export interface DecisionBoardRow {
+  symbol: string;
+  name: string;
+  price: number;
+  price_date: string;
+  role: string;
+  beta: number | null;
+  change_1d: number | null;
+  return_1w: number | null;
+  return_1m: number | null;
+  relative_1m_spy: number | null;
+  support: BoardLevel | null;
+  resistance: BoardLevel | null;
+  has_risk_plan: boolean;
+  note: string;
+}
+
+export interface DecisionBoard {
+  generated_at: string;
+  next_catalyst: string | null;
+  rows: DecisionBoardRow[];
+}
+
+export function getDecisionBoard(): Promise<DecisionBoard> {
+  return request<DecisionBoard>("/api/v1/watchlist/board");
+}
+
 export interface Health {
   status: "ok" | "degraded";
   environment: string;

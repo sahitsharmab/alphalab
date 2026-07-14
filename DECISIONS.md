@@ -892,6 +892,64 @@ partial-venue feed. Nothing about deterministic daily (M2a) features changes.
 
 ---
 
+## ADR-019
+
+### Title
+
+Decision Board — the Deterministic Layer of the Reporting Stack
+
+### Date
+
+2026-07-14
+
+### Status
+
+Accepted
+
+### Context
+
+The owner hand-built and validated a pre-market "decision sheet" (which
+catalyst outcome → which name → entry/stop/size) and asked for it in-product.
+That sheet has two layers: (1) deterministic facts — each name's levels,
+beta-role, catalysts, and risk plan; and (2) scenario reasoning — "if CPI core
+≤2.8 → SOFI fires." Layer 2 is the Morning Brief report from the four-stage
+architecture — Sprint B, gated on the owner's LLM-provider decision. Blocking
+the whole thing on the LLM key would waste the deterministic value.
+
+### Decision
+
+Ship the **Decision Board** as deterministic Layer 1 now: `GET
+/api/v1/watchlist/board` and a `/board` page. For each watchlist name it
+composes only *measured* facts — role (a beta band via `role_for_beta`),
+a support/resistance bracket (the nearest EMAs below/above the last close via
+`ema_ladder`/`bracket`), momentum, 1-month relative strength vs SPY,
+risk-plan presence, and the next shared market catalyst. Rows sort by beta
+descending so the board reads as a risk gradient.
+
+The board asserts **no** scenario judgment: it never claims which level is
+"the trigger" or which name fits which outcome. That interpretation is the
+reasoning layer (B1/B2, ADR-006), keeping the ADR-011 (facts vs
+interpretation) and ADR-016 (editorial separate from evidence) boundary
+intact.
+
+### Reasoning
+
+It composes data AlphaLab already trusts (watchlist, EMAs, beta, calendar,
+risk plans) with no new source and no LLM cost — honoring the free-first
+posture. It also builds the exact scaffold the LLM Morning Brief will later
+populate with reasoning, so Layer 2 becomes an additive overlay rather than a
+rebuild. Role bands and level brackets are pure, deterministic, and unit-tested.
+
+### Consequences
+
+No new tables or migrations (composes existing storage). The board reflects
+each name's latest stored daily bar, so names refreshed at different times can
+differ by a session until ingestion updates them uniformly — disclosed in the
+footer. Layer 2 (scenario reasoning / Morning Brief) remains gated on B0 (the
+owner's LLM provider + key).
+
+---
+
 # Session Journal
 
 ---
@@ -1519,6 +1577,52 @@ limitation ADR-018 requires disclosing.
 M1b — Twelve Data connector + bitemporal `intraday_bars` storage, honoring the
 ADR-018 constraints. Separately, the Risk Planner catalyst-warning fix is a
 quick, high-value win.
+
+---
+
+## Session 017
+
+### Date
+
+2026-07-14
+
+### Goal
+
+Turn the owner's hand-built pre-market decision sheet into an in-product
+feature, deterministic layer first.
+
+### Completed
+
+* Built the pre-market decision sheet as a published Artifact first (dark
+  trading-terminal card, traffic-light CPI fork) to validate the format, then
+  refreshed it to Monday's close on request.
+* Accepted ADR-019 and shipped the **Decision Board** (deterministic Layer 1):
+  `app/engines/decision_board.py` (role bands, EMA ladder, support/resistance
+  bracket), `DecisionBoard`/`DecisionBoardRow` schema, `WatchlistService.board()`,
+  `GET /api/v1/watchlist/board`, and the `/board` page with role badges, a
+  next-catalyst banner, level brackets, and risk-plan indicators; cross-nav
+  from the watchlist.
+* 97 backend tests (added `test_decision_board.py` + a board integration test);
+  ruff, strict mypy, and the frontend build are clean.
+* Live-verified: the board renders the 7-name watchlist as a beta-sorted risk
+  gradient — KTOS shows no support (below every EMA — the falling knife),
+  NVDA/XLE show no resistance (clean uptrends), SOFI is wedged between its 9-
+  and 21-EMA, and the banner reads "CPI — today." Screenshot-verified.
+
+### Session Context (not committed as code)
+
+This session also delivered live trading decision-support ahead of the owner's
+first real trading week: verified the KOSPI crash cause and its dampened US
+transmission, built KTOS/SOFI/NBIS/NOW/XLE workspaces on demand, computed a
+6-month CPI-day event study (SPY ~0.4% avg vs NBIS ~6.8%), and armed SOFI/NOW
+risk plans. M1a was resolved separately (ADR-018, Session 016).
+
+### Next Recommended Task
+
+Layer 2 — the scenario-reasoning overlay (Morning Brief report) that populates
+the board with "which name fits which outcome." Gated on B0: the owner's LLM
+provider/model decision and API key. Until then, deterministic polish is
+available (uniform board refresh, per-row as-of, board sort options).
 
 ---
 
